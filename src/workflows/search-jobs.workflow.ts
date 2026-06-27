@@ -10,11 +10,21 @@ import { toSheetRow } from "../services/sheets/job-record.mapper";
 class SearchJobsWorkflow implements Workflow<JobSearch, Dashboard> {
   async run(search: JobSearch): Promise<Dashboard> {
     const result = await hirebaseService.searchJobs(search);
-    const jobs = await pipelineService.runMany(result.jobs);
-    for (const job of jobs) {
+
+    const newJobs = [];
+
+    for (const job of result.jobs) {
+      if (await sheetsService.exists(job.id)) continue;
+      newJobs.push(job);
+    }
+
+    const pipeline = await pipelineService.runMany(newJobs);
+
+    for (const job of pipeline) {
       await sheetsService.upsert(job.job.id, toSheetRow(job));
     }
-    return dashboardService.build(jobs);
+
+    return dashboardService.build(pipeline);
   }
 }
 

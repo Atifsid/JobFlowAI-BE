@@ -51,6 +51,10 @@ class SheetsService {
 
     return this.append(values);
   }
+
+  async exists(jobId: string) {
+    return (await this.findRow(jobId)) !== null;
+  }
 }
 
 export default new SheetsService();
