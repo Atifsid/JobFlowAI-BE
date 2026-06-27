@@ -1,0 +1,1 @@
+export type JobDecision = "REFERRAL" | "DIRECT_APPLY" | "SKIP";
