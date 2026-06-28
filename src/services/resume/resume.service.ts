@@ -4,11 +4,9 @@ import { ResumeTemplate } from "../../models/resume-template.model";
 
 class ResumeService {
   async save(company: string, title: string, content: string) {
-    const file = `${company}-${title}`.toLowerCase().replace(/[^a-z0-9]/g, "-");
-    const path = `storage/resumes/generated/${file}.md`;
-
-    await fs.writeFile(path, content);
-
+    const fileName = `${company}-${title}`.toLowerCase().replace(/[^a-z0-9]/g, "-");
+    const path = `storage/resumes/generated/${fileName}.tex`;
+    await fs.writeFile(path, content, "utf8");
     return path;
   }
 
