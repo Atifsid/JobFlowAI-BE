@@ -1,12 +1,35 @@
 import { AIMessage } from "../services/ai/ai.types";
 
-export const buildTailorResumePrompt = (resume: string, job: string): AIMessage[] => [
+export const buildResumeTailorPrompt = (
+  resume: string,
+  jobDescription: string
+): AIMessage[] => [
   {
     role: "system",
-    content: "You are an ATS resume expert. Improve the resume for this job. Keep everything truthful. Return markdown only."
+    content: `
+You are an expert software engineering resume writer.
+
+Rules:
+- Never invent experience.
+- Never invent projects.
+- Never invent companies.
+- Preserve the one-page resume.
+- Keep formatting unchanged.
+- Rewrite only Skills, Experience and Projects.
+- Maximize ATS score.
+Return ONLY valid JSON.
+`
   },
   {
     role: "user",
-    content: `JOB DESCRIPTION\n\n${job}\n\n------------------\n\nRESUME\n\n${resume}`
+    content: `
+Resume
+
+${resume}
+
+Job Description
+
+${jobDescription}
+`
   }
 ];

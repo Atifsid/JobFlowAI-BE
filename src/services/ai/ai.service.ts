@@ -4,7 +4,7 @@ import { ResumeScore } from "../../models/resume-score.model";
 import { parseJSON } from "../../utils/json";
 import { buildJobSummaryPrompt } from "../../prompts/job-summary.prompt";
 import { buildResumeScorePrompt } from "../../prompts/resume-score.prompt";
-import { buildTailorResumePrompt } from "../../prompts/tailor-resume.prompt";
+import { buildResumeTailorPrompt } from "../../prompts/tailor-resume.prompt";
 
 class AIService {
   private provider = ProviderFactory.get();
@@ -23,7 +23,7 @@ class AIService {
   }
 
   async tailorResume(job: string, resume: string) {
-    return this.chat(buildTailorResumePrompt(resume, job));
+    return this.chat(buildResumeTailorPrompt(resume, job));
   }
 }
 
