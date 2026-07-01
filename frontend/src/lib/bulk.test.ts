@@ -48,17 +48,24 @@ describe("runWithConcurrency", () => {
 describe("runSequentiallyWithDelay", () => {
   it("processes items one at a time, in order", async () => {
     const order: number[] = [];
+    let active = 0;
+    let maxActive = 0;
 
     await runSequentiallyWithDelay(
       [1, 2, 3],
       async item => {
+        active++;
+        maxActive = Math.max(maxActive, active);
         order.push(item);
+        await new Promise(resolve => setTimeout(resolve, 10));
+        active--;
         return item;
       },
       () => {},
       [0, 0]
     );
 
+    expect(maxActive).toBeLessThanOrEqual(1);
     expect(order).toEqual([1, 2, 3]);
   });
 
