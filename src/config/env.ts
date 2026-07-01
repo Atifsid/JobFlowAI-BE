@@ -10,6 +10,9 @@ export const env = {
   HIREBASE_API_KEY: process.env.HIREBASE_API_KEY || "",
   HIREBASE_USE_LIVE_API: process.env.HIREBASE_USE_LIVE_API === "true",
 
+  // GREENHOUSE
+  GREENHOUSE_BOARD_TOKENS: process.env.GREENHOUSE_BOARD_TOKENS || "",
+
   // GOOGLE SHEET
   GOOGLE_SHEET_ID: process.env.GOOGLE_SHEET_ID || "",
   GOOGLE_SHEET_NAME: process.env.GOOGLE_SHEET_NAME || "",

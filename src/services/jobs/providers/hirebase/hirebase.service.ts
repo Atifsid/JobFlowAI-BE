@@ -1,10 +1,12 @@
 import axios from "axios";
-import { env } from "../../config/env";
-import { JobSearch } from "../../models/job-search.model";
+import { env } from "../../../../config/env";
+import { Job } from "../../../../models/job.model";
+import { JobSearch } from "../../../../models/job-search.model";
+import { JobProvider } from "../../job-provider.types";
 import { mapHireBaseJob } from "./hirebase.mapper";
-import logger from "../../config/logger";
+import logger from "../../../../config/logger";
 
-class HireBaseService {
+class HireBaseService implements JobProvider {
   private api = axios.create({
     baseURL: "https://api.hirebase.org/v2",
     headers: {
@@ -13,15 +15,12 @@ class HireBaseService {
     }
   });
 
-  async searchJobs(search: JobSearch) {
+  async search(search: JobSearch): Promise<Job[]> {
     const data = env.HIREBASE_USE_LIVE_API
       ? await this.fetchLiveJobs(search)
       : this.getStubJobs();
 
-    return {
-      ...data,
-      jobs: data.jobs.map(mapHireBaseJob)
-    };
+    return data.jobs.map(mapHireBaseJob);
   }
 
   private async fetchLiveJobs(search: JobSearch) {

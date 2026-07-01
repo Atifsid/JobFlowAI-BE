@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { JobSearch } from "../../../src/models/job-search.model";
+import { JobSearch } from "../../../../../src/models/job-search.model";
 
 const { mockPost } = vi.hoisted(() => ({ mockPost: vi.fn() }));
 
@@ -11,7 +11,7 @@ vi.mock("axios", () => ({
 
 const search: JobSearch = { title: "Software Engineer" };
 
-describe("HireBaseService.searchJobs", () => {
+describe("HireBaseService.search", () => {
   beforeEach(() => {
     vi.resetModules();
     mockPost.mockReset();
@@ -24,14 +24,14 @@ describe("HireBaseService.searchJobs", () => {
   it("returns the stub response and never calls axios when the flag is off", async () => {
     process.env.HIREBASE_USE_LIVE_API = "false";
     const { default: hirebaseService } = await import(
-      "../../../src/services/hirebase/hirebase.service"
+      "../../../../../src/services/jobs/providers/hirebase/hirebase.service"
     );
 
-    const result = await hirebaseService.searchJobs(search);
+    const result = await hirebaseService.search(search);
 
     expect(mockPost).not.toHaveBeenCalled();
-    expect(result.jobs.length).toBeGreaterThan(0);
-    expect(result.jobs[0]).toHaveProperty("source", "HireBase");
+    expect(result.length).toBeGreaterThan(0);
+    expect(result[0]).toHaveProperty("source", "HireBase");
   });
 
   it("calls the real HireBase API and maps the response when the flag is on", async () => {
@@ -52,16 +52,16 @@ describe("HireBaseService.searchJobs", () => {
     });
 
     const { default: hirebaseService } = await import(
-      "../../../src/services/hirebase/hirebase.service"
+      "../../../../../src/services/jobs/providers/hirebase/hirebase.service"
     );
 
-    const result = await hirebaseService.searchJobs(search);
+    const result = await hirebaseService.search(search);
 
     expect(mockPost).toHaveBeenCalledWith(
       "/jobs/search",
       expect.objectContaining({ job_titles: ["Software Engineer"] })
     );
-    expect(result.jobs).toEqual([
+    expect(result).toEqual([
       expect.objectContaining({
         id: "1",
         title: "Engineer",

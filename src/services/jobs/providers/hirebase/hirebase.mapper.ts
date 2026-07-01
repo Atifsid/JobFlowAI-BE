@@ -1,4 +1,4 @@
-import { Job } from "../../models/job.model";
+import { Job } from "../../../../models/job.model";
 
 export const mapHireBaseJob = (job: any): Job => ({
   id: job._id,
