@@ -30,7 +30,7 @@ class SearchJobsWorkflow implements Workflow<JobSearch, Dashboard> {
       const pipeline = await pipelineService.runMany(newJobs);
 
       for (const item of pipeline) {
-        await cache.save(item.job);
+        await cache.save(item);
         await sheetsService.upsert(item.job.id, toSheetRow(item));
       }
 
