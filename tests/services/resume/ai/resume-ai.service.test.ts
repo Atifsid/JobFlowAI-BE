@@ -75,4 +75,36 @@ describe("ResumeAIService", () => {
       expect.stringContaining("OVERFLOW WARNING:")
     );
   });
+
+  it("warns when the tailored Experience section drops an employer", async () => {
+    const original = `**Senior Engineer** | Acme Corp | Jan 2024 – Present
+- Did stuff.
+
+**Engineer** | Beta Inc | Jan 2020 – Jan 2024
+- Did other stuff.`;
+
+    mockTailorExperience.mockResolvedValue(
+      "**Senior Engineer** | Acme Corp | Jan 2024 – Present\n- Did stuff."
+    );
+
+    await resumeAIService.tailorExperience(original, "job desc");
+
+    expect(mockWarn).toHaveBeenCalledWith(
+      expect.stringContaining("Beta Inc")
+    );
+  });
+
+  it("does not warn when every employer is kept in the tailored Experience section", async () => {
+    const original = `**Senior Engineer** | Acme Corp | Jan 2024 – Present
+- Did stuff.
+
+**Engineer** | Beta Inc | Jan 2020 – Jan 2024
+- Did other stuff.`;
+
+    mockTailorExperience.mockResolvedValue(original);
+
+    await resumeAIService.tailorExperience(original, "job desc");
+
+    expect(mockWarn).not.toHaveBeenCalled();
+  });
 });
