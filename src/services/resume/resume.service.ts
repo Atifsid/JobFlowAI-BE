@@ -1,40 +1,34 @@
 import fs from "fs/promises";
-import { ResumeBlocks } from "../../models/resume-blocks.model";
-import { buildStarterTemplateDocx } from "./docx/build-starter-template";
 
-const MASTER_TEMPLATE_PATH = "storage/resumes/master.docx";
-const MASTER_RESUME_PATH = "storage/resumes/master-resume.json";
+const MASTER_RESUME_PATH = "storage/resumes/master.md";
 const GENERATED_DIR = "storage/resumes/generated";
 
-const STARTER_MASTER_RESUME: ResumeBlocks = {
-  skills: "TypeScript, JavaScript, Node.js, React, SQL",
-  experience:
-    "Software Engineer at Example Corp - built and maintained web applications.",
-  projects: "JobFlowAI - AI-assisted job search and application tracker."
-};
+const STARTER_MASTER_RESUME = `# Jane Doe
+jane.doe@example.com | linkedin.com/in/janedoe | github.com/janedoe
+
+## Skills
+TypeScript, JavaScript, Node.js, React, SQL
+
+## Experience
+Software Engineer at Example Corp - built and maintained web applications.
+
+## Projects
+JobFlowAI - AI-assisted job search and application tracker.
+`;
 
 class ResumeService {
-  async getMasterTemplate(): Promise<Buffer> {
+  /**
+   * The master resume is a single Markdown file: static content (name,
+   * contact info, section headings) plus the text under "## Skills" /
+   * "## Experience" / "## Projects" that AI tailors per job. Bootstraps a
+   * placeholder file on first run - replace it with your real resume.
+   */
+  async getMasterResume(): Promise<string> {
     try {
-      return await fs.readFile(MASTER_TEMPLATE_PATH);
-    } catch {
-      const buffer = buildStarterTemplateDocx();
-      await fs.mkdir("storage/resumes", { recursive: true });
-      await fs.writeFile(MASTER_TEMPLATE_PATH, buffer);
-      return buffer;
-    }
-  }
-
-  async getMasterResume(): Promise<ResumeBlocks> {
-    try {
-      const raw = await fs.readFile(MASTER_RESUME_PATH, "utf8");
-      return JSON.parse(raw);
+      return await fs.readFile(MASTER_RESUME_PATH, "utf8");
     } catch {
       await fs.mkdir("storage/resumes", { recursive: true });
-      await fs.writeFile(
-        MASTER_RESUME_PATH,
-        JSON.stringify(STARTER_MASTER_RESUME, null, 2)
-      );
+      await fs.writeFile(MASTER_RESUME_PATH, STARTER_MASTER_RESUME);
       return STARTER_MASTER_RESUME;
     }
   }
@@ -43,7 +37,7 @@ class ResumeService {
     const fileName = `${company}-${title}`
       .toLowerCase()
       .replace(/[^a-z0-9]/g, "-");
-    const path = `${GENERATED_DIR}/${fileName}.docx`;
+    const path = `${GENERATED_DIR}/${fileName}.pdf`;
     await fs.mkdir(GENERATED_DIR, { recursive: true });
     await fs.writeFile(path, content);
     return path;

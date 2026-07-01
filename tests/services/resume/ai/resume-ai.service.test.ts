@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockTailorSkills, mockTailorExperience, mockTailorProjects } =
+const { mockTailorSkills, mockTailorExperience, mockTailorProjects, mockWarn } =
   vi.hoisted(() => ({
     mockTailorSkills: vi.fn(),
     mockTailorExperience: vi.fn(),
-    mockTailorProjects: vi.fn()
+    mockTailorProjects: vi.fn(),
+    mockWarn: vi.fn()
   }));
 
 vi.mock("../../../../src/services/ai/ai.service", () => ({
@@ -15,6 +16,10 @@ vi.mock("../../../../src/services/ai/ai.service", () => ({
   }
 }));
 
+vi.mock("../../../../src/config/logger", () => ({
+  default: { warn: mockWarn }
+}));
+
 import resumeAIService from "../../../../src/services/resume/ai/resume-ai.service";
 
 describe("ResumeAIService", () => {
@@ -22,6 +27,7 @@ describe("ResumeAIService", () => {
     mockTailorSkills.mockReset();
     mockTailorExperience.mockReset();
     mockTailorProjects.mockReset();
+    mockWarn.mockReset();
   });
 
   it("delegates tailorSkills to the AI service", async () => {
@@ -55,5 +61,18 @@ describe("ResumeAIService", () => {
 
     expect(mockTailorProjects).toHaveBeenCalledWith("JobFlowAI", "job desc");
     expect(result).toBe("tailored projects");
+  });
+
+  it("strips a trailing OVERFLOW WARNING and logs it instead of returning it", async () => {
+    mockTailorSkills.mockResolvedValue(
+      "TypeScript, React, Node.js\nOVERFLOW WARNING: this section is now longer than the original"
+    );
+
+    const result = await resumeAIService.tailorSkills("React", "job desc");
+
+    expect(result).toBe("TypeScript, React, Node.js");
+    expect(mockWarn).toHaveBeenCalledWith(
+      expect.stringContaining("OVERFLOW WARNING:")
+    );
   });
 });

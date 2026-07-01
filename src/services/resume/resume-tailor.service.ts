@@ -1,37 +1,41 @@
 import { Job } from "../../models/job.model";
 import resumeService from "./resume.service";
-import docxService from "./docx/docx.service";
+import markdownService from "./markdown/markdown.service";
+import pdfRenderService from "./pdf/pdf-render.service";
 import resumeAIService from "./ai/resume-ai.service";
 
 class ResumeTailorService {
   async generate(job: Job) {
-    const template = await resumeService.getMasterTemplate();
     const master = await resumeService.getMasterResume();
 
-    const skills = await resumeAIService.tailorSkills(
-      master.skills,
+    const skills = markdownService.extract(master, "Skills");
+    const experience = markdownService.extract(master, "Experience");
+    const projects = markdownService.extract(master, "Projects");
+
+    const newSkills = await resumeAIService.tailorSkills(
+      skills,
       job.description
     );
 
-    const experience = await resumeAIService.tailorExperience(
-      master.experience,
+    const newExperience = await resumeAIService.tailorExperience(
+      experience,
       job.description
     );
 
-    const projects = await resumeAIService.tailorProjects(
-      master.projects,
+    const newProjects = await resumeAIService.tailorProjects(
+      projects,
       job.description
     );
 
-    const output = docxService.render(template, {
-      SKILLS_SECTION: skills,
-      EXPERIENCE_BULLETS: experience,
-      PROJECTS_SECTION: projects
-    });
+    let tailored = master;
+    tailored = markdownService.replace(tailored, "Skills", newSkills);
+    tailored = markdownService.replace(tailored, "Experience", newExperience);
+    tailored = markdownService.replace(tailored, "Projects", newProjects);
 
-    const docPath = await resumeService.save(job.company, job.title, output);
+    const pdf = await pdfRenderService.render(tailored);
+    const pdfPath = await resumeService.save(job.company, job.title, pdf);
 
-    return { docPath };
+    return { pdfPath };
   }
 }
 
