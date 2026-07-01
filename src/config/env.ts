@@ -28,4 +28,9 @@ export const env = {
   LINKEDIN_SESSION_PATH:
     process.env.LINKEDIN_SESSION_PATH || "credentials/linkedin-session.json",
   EMPLOYEE_SEARCH_LIMIT: Number(process.env.EMPLOYEE_SEARCH_LIMIT || 5),
+
+  // RESUME PDF + DRIVE
+  RESUME_PDF_ENABLED: process.env.RESUME_PDF_ENABLED === "true",
+  DRIVE_UPLOAD_ENABLED: process.env.DRIVE_UPLOAD_ENABLED === "true",
+  GOOGLE_DRIVE_FOLDER_ID: process.env.GOOGLE_DRIVE_FOLDER_ID || "",
 };
