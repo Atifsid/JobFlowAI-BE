@@ -16,7 +16,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "linkedin:login": "tsx scripts/linkedin-login.ts"
+    "linkedin:login": "tsx scripts/linkedin-login.ts",
+    "google:drive-login": "tsx scripts/google-drive-login.ts"
   },
   "keywords": [],
   "author": "",

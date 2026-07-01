@@ -32,5 +32,16 @@ export const env = {
   // RESUME PDF + DRIVE
   RESUME_PDF_ENABLED: process.env.RESUME_PDF_ENABLED === "true",
   DRIVE_UPLOAD_ENABLED: process.env.DRIVE_UPLOAD_ENABLED === "true",
+  // Optional - if set, uploads go into this folder; otherwise Drive root.
   GOOGLE_DRIVE_FOLDER_ID: process.env.GOOGLE_DRIVE_FOLDER_ID || "",
+  // Service accounts have no Drive storage quota of their own (confirmed
+  // live - sharing a folder with the service account does not work either,
+  // Google now requires Shared Drives or domain-wide delegation for that,
+  // both Workspace-only). Drive uploads instead authenticate as the user's
+  // own Google account via OAuth, so the file lands in their own quota.
+  GOOGLE_OAUTH_CLIENT_ID: process.env.GOOGLE_OAUTH_CLIENT_ID || "",
+  GOOGLE_OAUTH_CLIENT_SECRET: process.env.GOOGLE_OAUTH_CLIENT_SECRET || "",
+  GOOGLE_OAUTH_TOKEN_PATH:
+    process.env.GOOGLE_OAUTH_TOKEN_PATH ||
+    "credentials/google-oauth-token.json",
 };

@@ -8,22 +8,23 @@ class DriveService {
    * view" - required for the resume-link outreach use case (a referral
    * contact needs to open it without being individually granted access).
    *
-   * Service accounts have no storage quota of their own, so the file must
-   * be created inside a folder a real Google account has shared with the
-   * service account (Editor access) - see GOOGLE_DRIVE_FOLDER_ID in
-   * .env.example for the one-time setup this requires.
+   * Authenticates as the user's own Google account (OAuth) rather than
+   * the service account - see scripts/google-drive-login.ts for the
+   * one-time setup this requires.
    */
   async upload(filePath: string, fileName: string): Promise<string> {
-    if (!env.GOOGLE_DRIVE_FOLDER_ID) {
+    if (!fs.existsSync(env.GOOGLE_OAUTH_TOKEN_PATH)) {
       throw new Error(
-        "GOOGLE_DRIVE_FOLDER_ID is not set. Service accounts have no Drive storage of their own - create a folder in your Google Drive, share it with the service account's client_email (Editor access), and set GOOGLE_DRIVE_FOLDER_ID to that folder's ID."
+        `No Google Drive OAuth token found at ${env.GOOGLE_OAUTH_TOKEN_PATH}. Run "npm run google:drive-login" once to authorize and save a token.`
       );
     }
 
     const { data } = await drive.files.create({
       requestBody: {
         name: fileName,
-        parents: [env.GOOGLE_DRIVE_FOLDER_ID]
+        ...(env.GOOGLE_DRIVE_FOLDER_ID
+          ? { parents: [env.GOOGLE_DRIVE_FOLDER_ID] }
+          : {})
       },
       media: {
         mimeType: this.mimeTypeFor(filePath),
