@@ -3,10 +3,12 @@ import fs from "fs";
 import { Employee, EmployeeProvider } from "../employee.types";
 import { env } from "../../../config/env";
 
-const RESULT_CARD_SELECTOR = "li.reusable-search__result-container";
-const NAME_SELECTOR = ".entity-result__title-text a span[aria-hidden='true']";
-const TITLE_SELECTOR = ".entity-result__primary-subtitle";
-const LINK_SELECTOR = ".entity-result__title-text a";
+// LinkedIn's search-result markup uses hashed/obfuscated class names that
+// change across builds, so extraction is structural rather than
+// class-based: each result is a [role="listitem"], its profile link is the
+// first anchor pointing at /in/<handle>, and the name/title are the first
+// two <p> elements in document order (verified against a live session).
+const RESULT_CARD_SELECTOR = "[role='listitem']";
 
 class LinkedInProvider implements EmployeeProvider {
   async find(company: string): Promise<Employee[]> {
@@ -37,29 +39,30 @@ class LinkedInProvider implements EmployeeProvider {
 
       const employees = await page.$$eval(
         RESULT_CARD_SELECTOR,
-        (cards, args) =>
+        (cards, company) =>
           cards
-            .map(card => ({
-              name:
-                card
-                  .querySelector(args.nameSelector)
-                  ?.textContent?.trim() ?? "",
-              title:
-                card
-                  .querySelector(args.titleSelector)
-                  ?.textContent?.trim() ?? "",
-              linkedin:
-                (card.querySelector(args.linkSelector) as HTMLAnchorElement)
-                  ?.href ?? "",
-              company: args.company
-            }))
+            .map(card => {
+              const profileLink = card.querySelector(
+                "a[href*='/in/']"
+              ) as HTMLAnchorElement | null;
+              const paragraphs = Array.from(card.querySelectorAll("p"));
+              const name =
+                paragraphs[0]
+                  ?.querySelector("a")
+                  ?.textContent?.replace(/\s+/g, " ")
+                  .trim() ?? "";
+              const title =
+                paragraphs[1]?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+
+              return {
+                name,
+                title,
+                linkedin: profileLink?.getAttribute("href") ?? "",
+                company
+              };
+            })
             .filter(employee => employee.name && employee.linkedin),
-        {
-          nameSelector: NAME_SELECTOR,
-          titleSelector: TITLE_SELECTOR,
-          linkSelector: LINK_SELECTOR,
-          company
-        }
+        company
       );
 
       return employees.slice(0, env.EMPLOYEE_SEARCH_LIMIT);
