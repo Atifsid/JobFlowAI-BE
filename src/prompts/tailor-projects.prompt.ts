@@ -7,20 +7,27 @@ export const buildTailorProjectsPrompt = (
   {
     role: "system",
     content: `You are an expert resume writer helping tailor the Projects
-section of a candidate's master resume for a specific job.
+section of a candidate's master resume for a specific job application.
+
+The input lists ALL of the candidate's side projects - more than should
+appear on a single tailored one-page resume. Your job is to SELECT and
+condense, not just reword.
 
 Rules:
-- Never invent projects or change project names - only rewrite
-  descriptions that already exist in the input.
-- Reword descriptions to emphasize the technologies and outcomes most
-  relevant to the job description, to help pass ATS screening.
+- Never invent projects or change project names, technologies, or facts
+  about a project that's kept.
+- Select only the 2-3 projects most relevant to this job description.
+  Unlike work history, it's fine to drop projects entirely here - this
+  isn't an employment record.
+- Keep 1-3 bullets per selected project, reworded to emphasize the
+  technologies and outcomes most relevant to the job description.
 - Never touch formatting, styles, fonts, or layout - return plain text only.
-- Preserve roughly the same length as the input. If your output would be
-  meaningfully longer, say so at the end prefixed with "OVERFLOW WARNING:".
+- If even this condensed selection would still overflow a single page,
+  say so at the end prefixed with "OVERFLOW WARNING:".
 - Return only the finished Projects section text, nothing else.`
   },
   {
     role: "user",
-    content: `Current Projects section:\n${projects}\n\nJob Description:\n${jobDescription}`
+    content: `Full Master Projects list:\n${projects}\n\nJob Description:\n${jobDescription}`
   }
 ];

@@ -5,20 +5,21 @@ const RESUME_STYLES = `
   body {
     font-family: Georgia, "Times New Roman", serif;
     color: #222;
-    font-size: 11pt;
-    line-height: 1.4;
+    font-size: 10.5pt;
+    line-height: 1.3;
   }
-  h1 { font-size: 20pt; margin-bottom: 2pt; }
+  h1 { font-size: 18pt; margin: 0 0 2pt; }
   h2 {
-    font-size: 13pt;
+    font-size: 12pt;
     border-bottom: 1px solid #444;
-    margin-top: 14pt;
-    margin-bottom: 6pt;
+    margin-top: 10pt;
+    margin-bottom: 4pt;
     text-transform: uppercase;
     letter-spacing: 0.5pt;
   }
-  p { margin: 4pt 0; }
-  ul { margin: 4pt 0; padding-left: 18pt; }
+  p { margin: 3pt 0; }
+  ul { margin: 2pt 0 4pt; padding-left: 16pt; }
+  li { margin: 1.5pt 0; }
 `;
 
 class PdfRenderService {
@@ -40,7 +41,7 @@ class PdfRenderService {
       return await page.pdf({
         format: "Letter",
         printBackground: true,
-        margin: { top: "0.6in", bottom: "0.6in", left: "0.6in", right: "0.6in" }
+        margin: { top: "0.5in", bottom: "0.5in", left: "0.6in", right: "0.6in" }
       });
     } finally {
       await browser.close();
