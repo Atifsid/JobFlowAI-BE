@@ -20,4 +20,10 @@ app.get("/health", (_, res) => res.json({ success: true }));
 
 app.use("/files/resumes", express.static(path.join(process.cwd(), "storage/resumes/generated")));
 
+const frontendDist = path.join(process.cwd(), "frontend/dist");
+app.use(express.static(frontendDist));
+app.get(/^(?!\/api|\/files).*/, (_req, res) => {
+  res.sendFile(path.join(frontendDist, "index.html"));
+});
+
 export default app;
