@@ -1,18 +1,37 @@
 import { Job } from "../../models/job.model";
-import { ResumeTemplate } from "../../models/resume-template.model";
 import { ResumeScore } from "../../models/resume-score.model";
 
-class JobMatcherService {
-  match(job: Job, template: ResumeTemplate): ResumeScore {
-    const resumeSkills = this.getSkills(template);
+// Union of the skills previously split across the SDE/React/React Native
+// resume templates. There is now a single master resume, so there is a
+// single skill list to score jobs against.
+const MASTER_SKILLS = [
+  "Java",
+  "C#",
+  ".NET",
+  "TypeScript",
+  "SQL",
+  "Node.js",
+  "JavaScript",
+  "React",
+  "Angular",
+  "Next.js",
+  "Redux",
+  "React Native",
+  "Android",
+  "iOS",
+  "Kotlin",
+  "Swift"
+];
 
+class JobMatcherService {
+  match(job: Job): ResumeScore {
     const jobSkills = job.skills ?? [];
     const matched = jobSkills.filter(skill =>
-      resumeSkills.some(s => s.toLowerCase() === skill.toLowerCase())
+      MASTER_SKILLS.some(s => s.toLowerCase() === skill.toLowerCase())
     );
 
-    const missing = jobSkills.filter(skill =>
-      !resumeSkills.some(s => s.toLowerCase() === skill.toLowerCase())
+    const missing = jobSkills.filter(
+      skill => !MASTER_SKILLS.some(s => s.toLowerCase() === skill.toLowerCase())
     );
 
     const score = jobSkills.length
@@ -25,49 +44,8 @@ class JobMatcherService {
       strengths: matched.map(s => `Matched: ${s}`),
       weaknesses: missing.map(s => `Missing: ${s}`),
       recommendation:
-        score >= 70
-          ? "Apply"
-          : score >= 50
-            ? "Maybe"
-            : "Skip"
+        score >= 70 ? "Apply" : score >= 50 ? "Maybe" : "Skip"
     };
-  }
-
-  private getSkills(template: ResumeTemplate): string[] {
-    switch (template) {
-      case ResumeTemplate.REACT_NATIVE:
-        return [
-          "React Native",
-          "TypeScript",
-          "JavaScript",
-          "Android",
-          "iOS",
-          "Kotlin",
-          "Swift"
-        ];
-
-      case ResumeTemplate.REACT:
-        return [
-          "React",
-          "Next.js",
-          "TypeScript",
-          "JavaScript",
-          "Redux"
-        ];
-
-      default:
-        return [
-          "Java",
-          "C#",
-          ".NET",
-          "TypeScript",
-          "SQL",
-          "Node.js",
-          "JavaScript",
-          "React",
-          "Angular"
-        ];
-    }
   }
 }
 

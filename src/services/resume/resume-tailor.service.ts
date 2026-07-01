@@ -1,50 +1,37 @@
 import { Job } from "../../models/job.model";
-import selector from "./selector/resume-selector.service";
 import resumeService from "./resume.service";
-import latexService from "./latex/latex.service";
+import docxService from "./docx/docx.service";
 import resumeAIService from "./ai/resume-ai.service";
 
 class ResumeTailorService {
   async generate(job: Job) {
-    const template = selector.select(job.description);
+    const template = await resumeService.getMasterTemplate();
+    const master = await resumeService.getMasterResume();
 
-    const latex = await resumeService.getTemplate(template);
-
-    const skills = latexService.extract(latex, "SKILLS");
-    const experience = latexService.extract(latex, "EXPERIENCE");
-    const projects = latexService.extract(latex, "PROJECTS");
-
-    const newSkills = await resumeAIService.tailorSkills(
-      skills,
+    const skills = await resumeAIService.tailorSkills(
+      master.skills,
       job.description
     );
 
-    const newExperience = await resumeAIService.tailorExperience(
-      experience,
+    const experience = await resumeAIService.tailorExperience(
+      master.experience,
       job.description
     );
 
-    const newProjects = await resumeAIService.tailorProjects(
-      projects,
+    const projects = await resumeAIService.tailorProjects(
+      master.projects,
       job.description
     );
 
-    let output = latex;
+    const output = docxService.render(template, {
+      SKILLS_SECTION: skills,
+      EXPERIENCE_BULLETS: experience,
+      PROJECTS_SECTION: projects
+    });
 
-    output = latexService.replace(output, "SKILLS", newSkills);
-    output = latexService.replace(output, "EXPERIENCE", newExperience);
-    output = latexService.replace(output, "PROJECTS", newProjects);
+    const docPath = await resumeService.save(job.company, job.title, output);
 
-    const texPath = await resumeService.save(
-      job.company,
-      job.title,
-      output
-    );
-
-    return {
-      template,
-      tex: texPath
-    };
+    return { docPath };
   }
 }
 

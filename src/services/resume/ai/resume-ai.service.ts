@@ -1,23 +1,16 @@
+import aiService from "../../ai/ai.service";
+
 class ResumeAIService {
-  async tailorSkills(
-    skills: string,
-    jobDescription: string
-  ) {
-    return skills;
+  async tailorSkills(skills: string, jobDescription: string) {
+    return aiService.tailorSkills(skills, jobDescription);
   }
 
-  async tailorExperience(
-    experience: string,
-    jobDescription: string
-  ) {
-    return experience;
+  async tailorExperience(experience: string, jobDescription: string) {
+    return aiService.tailorExperience(experience, jobDescription);
   }
 
-  async tailorProjects(
-    projects: string,
-    jobDescription: string
-  ) {
-    return projects;
+  async tailorProjects(projects: string, jobDescription: string) {
+    return aiService.tailorProjects(projects, jobDescription);
   }
 }
 

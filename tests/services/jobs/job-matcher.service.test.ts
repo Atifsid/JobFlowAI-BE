@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import matcher from "../../../src/services/jobs/job-matcher.service";
-import { ResumeTemplate } from "../../../src/models/resume-template.model";
 import { Job } from "../../../src/models/job.model";
 
 const jobWithSkills = (skills: string[]): Job => ({
@@ -16,10 +15,10 @@ const jobWithSkills = (skills: string[]): Job => ({
 });
 
 describe("JobMatcherService.match", () => {
-  it("scores 100 when every job skill matches the template's skill list", () => {
+  it("scores 100 when every job skill matches the master skill list", () => {
     const job = jobWithSkills(["React", "TypeScript"]);
 
-    const result = matcher.match(job, ResumeTemplate.REACT);
+    const result = matcher.match(job);
 
     expect(result.score).toBe(100);
     expect(result.missingSkills).toEqual([]);
@@ -29,7 +28,7 @@ describe("JobMatcherService.match", () => {
   it("scores 0 and lists every skill as missing when nothing matches", () => {
     const job = jobWithSkills(["COBOL", "Fortran"]);
 
-    const result = matcher.match(job, ResumeTemplate.REACT);
+    const result = matcher.match(job);
 
     expect(result.score).toBe(0);
     expect(result.missingSkills).toEqual(["COBOL", "Fortran"]);
@@ -39,7 +38,7 @@ describe("JobMatcherService.match", () => {
   it("is case-insensitive when matching skills", () => {
     const job = jobWithSkills(["react", "typescript"]);
 
-    const result = matcher.match(job, ResumeTemplate.REACT);
+    const result = matcher.match(job);
 
     expect(result.score).toBe(100);
   });
@@ -47,8 +46,16 @@ describe("JobMatcherService.match", () => {
   it("scores 0 when the job has no listed skills", () => {
     const job = jobWithSkills([]);
 
-    const result = matcher.match(job, ResumeTemplate.SDE);
+    const result = matcher.match(job);
 
     expect(result.score).toBe(0);
+  });
+
+  it("matches skills spanning the former SDE/React/React Native lists", () => {
+    const job = jobWithSkills(["React Native", "Kotlin", "Angular"]);
+
+    const result = matcher.match(job);
+
+    expect(result.score).toBe(100);
   });
 });

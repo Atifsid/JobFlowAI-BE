@@ -9,12 +9,12 @@ class ResumeWorkflow {
     if (!job)
       throw new Error("Job not found.");
 
-    const path = await tailor.generate(job);
+    const { docPath } = await tailor.generate(job);
 
     // later
-    // await sheets.updateResume(jobId, path);
+    // await sheets.updateResume(jobId, docPath);
 
-    return { path };
+    return { docPath };
   }
 }
 

@@ -1,7 +1,9 @@
 import ProviderFactory from "./provider.factory";
 import { AIMessage } from "./ai.types";
 import { buildJobSummaryPrompt } from "../../prompts/job-summary.prompt";
-import { buildResumeTailorPrompt } from "../../prompts/tailor-resume.prompt";
+import { buildTailorSkillsPrompt } from "../../prompts/tailor-skills.prompt";
+import { buildTailorExperiencePrompt } from "../../prompts/tailor-experience.prompt";
+import { buildTailorProjectsPrompt } from "../../prompts/tailor-projects.prompt";
 
 class AIService {
   private provider = ProviderFactory.get();
@@ -14,8 +16,16 @@ class AIService {
     return this.chat(buildJobSummaryPrompt(description));
   }
 
-  async tailorResume(job: string, resume: string) {
-    return this.chat(buildResumeTailorPrompt(resume, job));
+  async tailorSkills(skills: string, jobDescription: string) {
+    return this.chat(buildTailorSkillsPrompt(skills, jobDescription));
+  }
+
+  async tailorExperience(experience: string, jobDescription: string) {
+    return this.chat(buildTailorExperiencePrompt(experience, jobDescription));
+  }
+
+  async tailorProjects(projects: string, jobDescription: string) {
+    return this.chat(buildTailorProjectsPrompt(projects, jobDescription));
   }
 }
 
