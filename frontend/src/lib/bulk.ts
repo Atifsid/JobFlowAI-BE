@@ -20,9 +20,8 @@ export async function runWithConcurrency<T, R>(
     }
   }
 
-  await Promise.all(
-    Array.from({ length: Math.min(limit, items.length) }, worker)
-  );
+  const workerCount = Math.max(1, Math.min(limit, items.length));
+  await Promise.all(Array.from({ length: workerCount }, worker));
 }
 
 const randomDelay = (minMs: number, maxMs: number) =>

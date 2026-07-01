@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { runWithConcurrency, runSequentiallyWithDelay } from "./bulk";
 
 describe("runWithConcurrency", () => {
@@ -43,9 +43,52 @@ describe("runWithConcurrency", () => {
     expect(results).toHaveLength(3);
     expect(results.find(r => r.item === 2)?.status).toBe("error");
   });
+
+  it("still makes progress and reports every item when limit is 0 or negative", async () => {
+    for (const limit of [0, -1]) {
+      const results: Array<{ item: number; status: string }> = [];
+
+      await runWithConcurrency(
+        [1, 2, 3],
+        limit,
+        async item => item,
+        (item, result) => results.push({ item, status: result.status })
+      );
+
+      expect(results).toHaveLength(3);
+      expect(results.every(r => r.status === "success")).toBe(true);
+    }
+  });
 });
 
 describe("runSequentiallyWithDelay", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("waits within the real default delay range ([3000, 5000]ms) between items", async () => {
+    vi.useFakeTimers();
+
+    const task = vi.fn(async (item: number) => item);
+
+    // No delayRangeMs override - exercises the real default in bulk.ts.
+    const donePromise = runSequentiallyWithDelay([1, 2], task, () => {});
+
+    // Let the first item's task and its microtask chain settle.
+    await vi.advanceTimersByTimeAsync(0);
+    expect(task).toHaveBeenCalledTimes(1);
+
+    // Still short of the minimum 3000ms delay - second item must not start yet.
+    await vi.advanceTimersByTimeAsync(2999);
+    expect(task).toHaveBeenCalledTimes(1);
+
+    // Past the maximum 5000ms delay - second item must have started by now.
+    await vi.advanceTimersByTimeAsync(2001);
+    expect(task).toHaveBeenCalledTimes(2);
+
+    await donePromise;
+  });
+
   it("processes items one at a time, in order", async () => {
     const order: number[] = [];
     let active = 0;
