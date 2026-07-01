@@ -1,8 +1,8 @@
-import googleProvider from "./providers/google.provider";
+import linkedinProvider from "./providers/linkedin.provider";
 
 class EmployeeService {
   async find(company: string) {
-    return googleProvider.find(company);
+    return linkedinProvider.find(company);
   }
 }
 

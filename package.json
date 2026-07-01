@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "linkedin:login": "tsx scripts/linkedin-login.ts"
   },
   "keywords": [],
   "author": "",

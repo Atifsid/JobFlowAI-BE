@@ -20,4 +20,9 @@ export const env = {
   OLLAMA_URL: process.env.OLLAMA_URL || "http://localhost:11434",
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
   ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL || "claude-opus-4-8",
+
+  // LINKEDIN
+  LINKEDIN_SESSION_PATH:
+    process.env.LINKEDIN_SESSION_PATH || "credentials/linkedin-session.json",
+  EMPLOYEE_SEARCH_LIMIT: Number(process.env.EMPLOYEE_SEARCH_LIMIT || 5),
 };
