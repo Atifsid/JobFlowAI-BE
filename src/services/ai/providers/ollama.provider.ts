@@ -5,7 +5,7 @@ import { AIMessage, AIProvider } from "../ai.types";
 export default class OllamaProvider implements AIProvider {
   async chat(messages: AIMessage[]): Promise<string> {
     const { data } = await axios.post(`${env.OLLAMA_URL}/api/chat`, {
-      model: "qwen2.5-coder:7b",
+      model: env.OLLAMA_MODEL,
       stream: false,
       messages
     });
