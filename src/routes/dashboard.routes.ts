@@ -3,6 +3,6 @@ import { dashboard } from "../controllers/dashboard.controller";
 
 const router = Router();
 
-router.post("/", dashboard);
+router.get("/", dashboard);
 
 export default router;
