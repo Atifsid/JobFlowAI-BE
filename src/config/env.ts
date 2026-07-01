@@ -8,6 +8,7 @@ export const env = {
 
   // HIREBASE
   HIREBASE_API_KEY: process.env.HIREBASE_API_KEY || "",
+  HIREBASE_USE_LIVE_API: process.env.HIREBASE_USE_LIVE_API === "true",
 
   // GOOGLE SHEET
   GOOGLE_SHEET_ID: process.env.GOOGLE_SHEET_ID || "",

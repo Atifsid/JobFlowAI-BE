@@ -14,21 +14,38 @@ class HireBaseService {
   });
 
   async searchJobs(search: JobSearch) {
-    // const { data } = await this.api.post("/jobs/search", {
-    //   job_titles: [search.title],
-    //   keywords: search.keywords,
-    //   location_types: search.remote ? ["Remote"] : undefined,
-    //   geo_locations: search.country ? [{ city: search.city, region: search.region, country: search.country }] : undefined,
-    //   experience: search.experience,
-    //   page: search.page ?? 1,
-    //   limit: search.limit ?? 5,
-    //   return_raw_description: "true",
-    //   include_no_salary: "true"
-    // });
+    const data = env.HIREBASE_USE_LIVE_API
+      ? await this.fetchLiveJobs(search)
+      : this.getStubJobs();
 
-    // logger.info(JSON.stringify(data));
+    return {
+      ...data,
+      jobs: data.jobs.map(mapHireBaseJob)
+    };
+  }
 
-    const data = {
+  private async fetchLiveJobs(search: JobSearch) {
+    const { data } = await this.api.post("/jobs/search", {
+      job_titles: [search.title],
+      keywords: search.keywords,
+      location_types: search.remote ? ["Remote"] : undefined,
+      geo_locations: search.country
+        ? [{ city: search.city, region: search.region, country: search.country }]
+        : undefined,
+      experience: search.experience,
+      page: search.page ?? 1,
+      limit: search.limit ?? 5,
+      return_raw_description: "true",
+      include_no_salary: "true"
+    });
+
+    logger.info(JSON.stringify(data));
+
+    return data;
+  }
+
+  private getStubJobs() {
+    return {
       "jobs": [
         {
           "_id": "6a2b4ffb03ba8a86df0cef16",
@@ -579,11 +596,6 @@ class HireBaseService {
       "page": 1,
       "limit": 5,
       "total_pages": 3
-    }
-
-    return {
-      ...data,
-      jobs: data.jobs.map(mapHireBaseJob)
     };
   }
 }
