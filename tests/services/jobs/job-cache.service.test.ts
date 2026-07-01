@@ -72,4 +72,13 @@ describe("JobCacheService", () => {
     expect(mockReadAll).toHaveBeenCalledWith("jobs");
     expect(result).toEqual([pipeline]);
   });
+
+  it("getAll() filters out old-format entries missing job/score, keeping well-formed pipelines", async () => {
+    const malformed = { id: "job-2", title: "Old Format Job" };
+    mockReadAll.mockResolvedValue([pipeline, malformed]);
+
+    const result = await jobCacheService.getAll();
+
+    expect(result).toEqual([pipeline]);
+  });
 });

@@ -17,7 +17,8 @@ class JobCacheService {
   }
 
   async getAll(): Promise<JobPipeline[]> {
-    return storage.readAll<JobPipeline>("jobs");
+    const pipelines = await storage.readAll<JobPipeline>("jobs");
+    return pipelines.filter((p): p is JobPipeline => Boolean(p?.job && p?.score));
   }
 }
 

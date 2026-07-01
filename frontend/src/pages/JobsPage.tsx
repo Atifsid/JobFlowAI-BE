@@ -67,7 +67,6 @@ export default function JobsPage() {
       await runSequentiallyWithDelay(
         selectedIds,
         async id => {
-          await api.findEmployees(id);
           return api.generateReferrals(id);
         },
         onResult,
