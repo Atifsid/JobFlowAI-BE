@@ -30,6 +30,10 @@ const buildPage = (overrides: Record<string, unknown> = {}) => ({
   goto: vi.fn().mockResolvedValue(undefined),
   url: vi.fn().mockReturnValue(SEARCH_URL),
   waitForSelector: vi.fn().mockResolvedValue(undefined),
+  // No "/company/" link found by default, so company-ID resolution fails
+  // and the provider falls back to a plain keyword search.
+  $eval: vi.fn().mockRejectedValue(new Error("no company link found")),
+  content: vi.fn().mockResolvedValue(""),
   $$eval: vi.fn().mockResolvedValue([
     {
       name: "Jane Doe",
@@ -56,7 +60,7 @@ describe("LinkedInProvider.find", () => {
     expect(mockLaunch).not.toHaveBeenCalled();
   });
 
-  it("returns employees scraped from the search results page", async () => {
+  it("falls back to a keyword search when the company ID can't be resolved", async () => {
     mockExistsSync.mockReturnValue(true);
     const page = buildPage();
     const browser = buildBrowser(page);
@@ -77,6 +81,27 @@ describe("LinkedInProvider.find", () => {
       }
     ]);
     expect(browser.close).toHaveBeenCalled();
+  });
+
+  it("filters by currentCompany when a company ID can be resolved", async () => {
+    mockExistsSync.mockReturnValue(true);
+    const page = buildPage({
+      $eval: vi.fn().mockResolvedValue("/company/acme-corp/"),
+      content: vi
+        .fn()
+        .mockResolvedValue(
+          '{"entityUrn":"urn:li:fsd_company:98765","universalName":"acme-corp"}'
+        )
+    });
+    const browser = buildBrowser(page);
+    mockLaunch.mockResolvedValue(browser);
+
+    await linkedinProvider.find("Acme");
+
+    expect(page.goto).toHaveBeenCalledWith(
+      expect.stringContaining(encodeURIComponent(JSON.stringify(["98765"]))),
+      expect.any(Object)
+    );
   });
 
   it("throws and still closes the browser when the session has expired", async () => {
