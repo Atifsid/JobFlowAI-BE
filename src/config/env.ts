@@ -14,7 +14,9 @@ export const env = {
   GOOGLE_SHEET_NAME: process.env.GOOGLE_SHEET_NAME || "",
   
   // AI
-  AI_PROVIDER: process.env.AI_PROVIDER || "ollama",
+  AI_PROVIDER: process.env.AI_PROVIDER || "claude",
   OLLAMA_MODEL: process.env.OLLAMA_MODEL || "qwen2.5-coder:7b",
   OLLAMA_URL: process.env.OLLAMA_URL || "http://localhost:11434",
+  ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
+  ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL || "claude-opus-4-8",
 };
