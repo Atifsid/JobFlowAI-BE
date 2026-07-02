@@ -12,6 +12,10 @@ class JobCacheService {
     return pipeline?.job ?? null;
   }
 
+  async getPipeline(id: string): Promise<JobPipeline | null> {
+    return storage.read<JobPipeline>("jobs", `${id}.json`);
+  }
+
   async exists(id: string) {
     return storage.exists("jobs", `${id}.json`);
   }

@@ -81,4 +81,21 @@ describe("JobCacheService", () => {
 
     expect(result).toEqual([pipeline]);
   });
+
+  it("getPipeline() returns the full cached pipeline by id", async () => {
+    mockRead.mockResolvedValue(pipeline);
+
+    const result = await jobCacheService.getPipeline("job-1");
+
+    expect(mockRead).toHaveBeenCalledWith("jobs", "job-1.json");
+    expect(result).toEqual(pipeline);
+  });
+
+  it("getPipeline() returns null when nothing is cached", async () => {
+    mockRead.mockResolvedValue(null);
+
+    const result = await jobCacheService.getPipeline("missing");
+
+    expect(result).toBeNull();
+  });
 });
