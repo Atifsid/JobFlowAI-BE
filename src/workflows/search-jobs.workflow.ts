@@ -1,7 +1,7 @@
 import { JobSearch } from "../models/job-search.model";
 import { Dashboard } from "../models/dashboard.model";
 import { JobProvider } from "../services/jobs/job-provider.types";
-import hirebaseProvider from "../services/jobs/providers/hirebase/hirebase.service";
+import jobspediaProvider from "../services/jobs/providers/jobspedia/jobspedia.service";
 import greenhouseProvider from "../services/jobs/providers/greenhouse/greenhouse.service";
 import pipelineService from "../services/jobs/job-pipeline.service";
 import dashboardService from "../services/dashboard/dashboard.service";
@@ -10,7 +10,7 @@ import { Workflow } from "../types/workflow";
 import { toSheetRow } from "../services/sheets/job-record.mapper";
 import cache from "../services/jobs/job-cache.service";
 
-const providers: JobProvider[] = [hirebaseProvider, greenhouseProvider];
+const providers: JobProvider[] = [jobspediaProvider, greenhouseProvider];
 
 class SearchJobsWorkflow implements Workflow<JobSearch, Dashboard> {
   async run(search: JobSearch): Promise<Dashboard> {

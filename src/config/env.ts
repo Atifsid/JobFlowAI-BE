@@ -13,6 +13,9 @@ export const env = {
   // GREENHOUSE
   GREENHOUSE_BOARD_TOKENS: process.env.GREENHOUSE_BOARD_TOKENS || "",
 
+  // JOBSPEDIA
+  JOBSPEDIA_BASE_URL: process.env.JOBSPEDIA_BASE_URL || "http://localhost:8080",
+
   // GOOGLE SHEET
   GOOGLE_SHEET_ID: process.env.GOOGLE_SHEET_ID || "",
   GOOGLE_SHEET_NAME: process.env.GOOGLE_SHEET_NAME || "",
