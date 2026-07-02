@@ -1,22 +1,29 @@
-import { Navigate, Route, Routes } from "react-router-dom";
-import Layout from "./components/Layout";
-import SearchPage from "./pages/SearchPage";
-import JobsPage from "./pages/JobsPage";
-import JobDetailPage from "./pages/JobDetailPage";
-import EmployeesPage from "./pages/EmployeesPage";
-import ReferralPage from "./pages/ReferralPage";
+import { lazy, Suspense } from "react";
+import { Route, Routes } from "react-router-dom";
+import Layout from "./components/layout/Layout";
+
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const JobSearch = lazy(() => import("./pages/JobSearch"));
+const JobDetail = lazy(() => import("./pages/JobDetail"));
+const ResumeTailor = lazy(() => import("./pages/ResumeTailor"));
+const EmployeeSearch = lazy(() => import("./pages/EmployeeSearch"));
+const ReferralDraft = lazy(() => import("./pages/ReferralDraft"));
+const ApplicationTracker = lazy(() => import("./pages/ApplicationTracker"));
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Navigate to="/jobs" replace />} />
-        <Route path="search" element={<SearchPage />} />
-        <Route path="jobs" element={<JobsPage />} />
-        <Route path="jobs/:id" element={<JobDetailPage />} />
-        <Route path="jobs/:id/employees" element={<EmployeesPage />} />
-        <Route path="jobs/:id/referral" element={<ReferralPage />} />
-      </Route>
-    </Routes>
+    <Suspense fallback={<p>Loading...</p>}>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="search" element={<JobSearch />} />
+          <Route path="jobs" element={<ApplicationTracker />} />
+          <Route path="jobs/:id" element={<JobDetail />} />
+          <Route path="jobs/:id/resume" element={<ResumeTailor />} />
+          <Route path="jobs/:id/employees" element={<EmployeeSearch />} />
+          <Route path="jobs/:id/referral" element={<ReferralDraft />} />
+        </Route>
+      </Routes>
+    </Suspense>
   );
 }
