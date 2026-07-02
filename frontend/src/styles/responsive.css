@@ -1,0 +1,161 @@
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app-header {
+  padding: var(--space-lg) var(--space-xl);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.app-content {
+  flex: 1;
+}
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  padding: var(--space-lg);
+  border-right: 1px solid var(--border-color);
+}
+
+.sidebar__link {
+  display: block;
+  padding: var(--space-sm) var(--space-md);
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-button);
+  margin-bottom: var(--space-xs);
+}
+
+.sidebar__link--active {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.bottom-tabs {
+  display: none;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+}
+
+.employee-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+
+.job-search-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--space-lg);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.data-table__row--clickable {
+  cursor: pointer;
+}
+
+.data-table__cards {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .sidebar {
+    display: none;
+  }
+
+  .bottom-tabs {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-color);
+    z-index: 10;
+  }
+
+  .bottom-tabs a {
+    flex: 1;
+    text-align: center;
+    padding: var(--space-md);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 12px;
+  }
+
+  .bottom-tabs__link--active {
+    color: var(--accent);
+  }
+
+  .app-content {
+    padding-bottom: 56px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .employee-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .data-table__col--hide-tablet {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .employee-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .job-search-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .job-search-layout .job-search-list {
+    display: block;
+  }
+
+  .job-search-layout.job-search-layout--detail .job-search-list {
+    display: none;
+  }
+
+  .data-table {
+    display: none;
+  }
+
+  .data-table__cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+}
