@@ -18,7 +18,8 @@ class SearchJobsWorkflow implements Workflow<JobSearch, Dashboard> {
       const results = await Promise.all(
         providers.map(provider => provider.search(search))
       );
-      const jobs = results.flat();
+      const jobs = results.flatMap(r => r.jobs);
+      const totalMatches = results.reduce((sum, r) => sum + r.total, 0);
 
       const newJobs = [];
 
@@ -34,7 +35,11 @@ class SearchJobsWorkflow implements Workflow<JobSearch, Dashboard> {
         await sheetsService.upsert(item.job.id, toSheetRow(item));
       }
 
-      return dashboardService.build(pipeline);
+      return dashboardService.build(pipeline, {
+        page: search.page ?? 1,
+        limit: search.limit ?? 20,
+        totalMatches
+      });
     } catch (error) {
       console.error("Error occurred while searching jobs:", error);
       throw error;
