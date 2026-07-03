@@ -30,8 +30,9 @@ describe("HireBaseService.search", () => {
     const result = await hirebaseService.search(search);
 
     expect(mockPost).not.toHaveBeenCalled();
-    expect(result.length).toBeGreaterThan(0);
-    expect(result[0]).toHaveProperty("source", "HireBase");
+    expect(result.jobs.length).toBeGreaterThan(0);
+    expect(result.total).toBe(result.jobs.length);
+    expect(result.jobs[0]).toHaveProperty("source", "HireBase");
   });
 
   it("calls the real HireBase API and maps the response when the flag is on", async () => {
@@ -61,7 +62,8 @@ describe("HireBaseService.search", () => {
       "/jobs/search",
       expect.objectContaining({ job_titles: ["Software Engineer"] })
     );
-    expect(result).toEqual([
+    expect(result.total).toBe(1);
+    expect(result.jobs).toEqual([
       expect.objectContaining({
         id: "1",
         title: "Engineer",

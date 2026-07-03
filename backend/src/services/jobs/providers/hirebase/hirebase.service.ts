@@ -1,8 +1,7 @@
 import axios from "axios";
 import { env } from "../../../../config/env";
-import { Job } from "../../../../models/job.model";
 import { JobSearch } from "../../../../models/job-search.model";
-import { JobProvider } from "../../job-provider.types";
+import { JobProvider, JobSearchResult } from "../../job-provider.types";
 import { mapHireBaseJob } from "./hirebase.mapper";
 import logger from "../../../../config/logger";
 
@@ -15,12 +14,13 @@ class HireBaseService implements JobProvider {
     }
   });
 
-  async search(search: JobSearch): Promise<Job[]> {
+  async search(search: JobSearch): Promise<JobSearchResult> {
     const data = env.HIREBASE_USE_LIVE_API
       ? await this.fetchLiveJobs(search)
       : this.getStubJobs();
 
-    return data.jobs.map(mapHireBaseJob);
+    const jobs = data.jobs.map(mapHireBaseJob);
+    return { jobs, total: jobs.length };
   }
 
   private async fetchLiveJobs(search: JobSearch) {
@@ -31,7 +31,6 @@ class HireBaseService implements JobProvider {
       geo_locations: search.country
         ? [{ city: search.city, region: search.region, country: search.country }]
         : undefined,
-      experience: search.experience,
       page: search.page ?? 1,
       limit: search.limit ?? 5,
       return_raw_description: "true",
