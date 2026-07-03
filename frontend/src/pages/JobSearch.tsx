@@ -1,22 +1,35 @@
 import { useState } from "react";
-import type { FormEvent } from "react";
 import { useJobSearch } from "../hooks/useJobSearch";
 import { useJobStatusUpdate } from "../hooks/useJobStatusUpdate";
 import JobCard from "../components/features/JobCard";
 import JobDetailPanel from "../components/features/JobDetailPanel";
-import Button from "../components/common/Button";
-import type { JobStatus } from "../types";
+import JobFilters from "../components/features/JobFilters";
+import Pagination from "../components/common/Pagination";
+import type { FormEvent } from "react";
+import type { JobSearchParams, JobStatus } from "../types";
+
+const PAGE_SIZE = 20;
 
 export default function JobSearch() {
-  const [title, setTitle] = useState("");
-  const [remote, setRemote] = useState(false);
+  const [filters, setFilters] = useState<JobSearchParams>({});
+  const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { result, loading, error, search } = useJobSearch();
   const { updateStatus } = useJobStatusUpdate();
 
-  const onSubmit = (e: FormEvent) => {
+  const runSearch = (nextFilters: JobSearchParams, nextPage: number) => {
+    search({ ...nextFilters, page: nextPage, limit: PAGE_SIZE });
+  };
+
+  const onFiltersSubmit = (e: FormEvent) => {
     e.preventDefault();
-    search({ title, remote });
+    setPage(1);
+    runSearch(filters, 1);
+  };
+
+  const onPageChange = (nextPage: number) => {
+    setPage(nextPage);
+    runSearch(filters, nextPage);
   };
 
   const selected = result?.jobs.find(j => j.job.id === selectedId) ?? null;
@@ -27,20 +40,12 @@ export default function JobSearch() {
     if (status === "SKIPPED") setSelectedId(null);
   };
 
+  const totalPages =
+    result?.totalMatches !== undefined ? Math.max(1, Math.ceil(result.totalMatches / PAGE_SIZE)) : 1;
+
   return (
     <div className="page">
       <h1 className="text-display">Job Search</h1>
-
-      <form onSubmit={onSubmit} className="search-bar">
-        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Job title" required />
-        <label>
-          <input type="checkbox" checked={remote} onChange={e => setRemote(e.target.checked)} />
-          Remote only
-        </label>
-        <Button type="submit" disabled={loading}>
-          {loading ? "Searching..." : "Search"}
-        </Button>
-      </form>
 
       {error && <p role="alert">{error}</p>}
 
@@ -51,6 +56,8 @@ export default function JobSearch() {
       )}
 
       <div className={`job-search-layout${selectedId ? " job-search-layout--detail" : ""}`}>
+        <JobFilters filters={filters} onChange={setFilters} onSubmit={onFiltersSubmit} loading={loading} />
+
         <div className="job-search-list">
           {result?.jobs.map(pipeline => (
             <JobCard
@@ -60,6 +67,7 @@ export default function JobSearch() {
               onClick={() => setSelectedId(pipeline.job.id)}
             />
           ))}
+          {result && <Pagination page={page} totalPages={totalPages} onPageChange={onPageChange} />}
         </div>
 
         {selected && (

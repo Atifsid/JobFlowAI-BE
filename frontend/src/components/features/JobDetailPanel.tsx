@@ -29,6 +29,7 @@ function formatPostedAt(postedAt?: string): string | null {
 
 function buildMeta(job: Job): string[] {
   const parts = [`${job.location}${job.remote ? " · Remote" : ""}`];
+  if (job.seniority) parts.push(job.seniority);
   if (job.employmentType) parts.push(job.employmentType);
 
   const salary = formatSalary(job);

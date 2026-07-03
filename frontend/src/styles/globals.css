@@ -490,3 +490,74 @@ select:disabled {
 .job-actions__error {
   color: var(--error);
 }
+
+/* Job search filters */
+
+.job-search-filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: var(--space-lg);
+  align-self: start;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.filter-field input,
+.filter-field select {
+  padding: var(--space-xs) var(--space-sm);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.filter-field legend {
+  padding: 0;
+  margin-bottom: var(--space-xs);
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-direction: row;
+  text-transform: capitalize;
+}
+
+/* Pagination */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-lg);
+}
+
+.pagination__nav,
+.pagination__page {
+  padding: var(--space-xs) var(--space-sm);
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.pagination__nav:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.pagination__page--active {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}

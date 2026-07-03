@@ -20,7 +20,7 @@ const pipeline: JobPipeline = {
 describe("JobSearch", () => {
   it("shows results counter and job list after a search", () => {
     vi.mocked(useJobSearch).mockReturnValue({
-      result: { total: 1, referral: 0, directApply: 1, skip: 0, jobs: [pipeline] },
+      result: { total: 1, referral: 0, directApply: 1, skip: 0, jobs: [pipeline], page: 1, limit: 20, totalMatches: 1 },
       loading: false, error: null, search: vi.fn()
     });
     vi.mocked(useJobStatusUpdate).mockReturnValue({ updateStatus: vi.fn(), error: null });
@@ -33,7 +33,7 @@ describe("JobSearch", () => {
 
   it("shows the detail panel for the selected job", () => {
     vi.mocked(useJobSearch).mockReturnValue({
-      result: { total: 1, referral: 0, directApply: 1, skip: 0, jobs: [pipeline] },
+      result: { total: 1, referral: 0, directApply: 1, skip: 0, jobs: [pipeline], page: 1, limit: 20, totalMatches: 1 },
       loading: false, error: null, search: vi.fn()
     });
     vi.mocked(useJobStatusUpdate).mockReturnValue({ updateStatus: vi.fn(), error: null });
@@ -42,5 +42,35 @@ describe("JobSearch", () => {
 
     fireEvent.click(screen.getByText("Senior Engineer"));
     expect(screen.getByText("Tailor Resume")).toBeInTheDocument();
+  });
+
+  it("submitting the filter form triggers a search with page reset to 1", () => {
+    const search = vi.fn();
+    vi.mocked(useJobSearch).mockReturnValue({ result: null, loading: false, error: null, search });
+    vi.mocked(useJobStatusUpdate).mockReturnValue({ updateStatus: vi.fn(), error: null });
+
+    render(<MemoryRouter><JobSearch /></MemoryRouter>);
+
+    fireEvent.change(screen.getByPlaceholderText("e.g. Software Engineer"), { target: { value: "Engineer" } });
+    fireEvent.click(screen.getByText("Search"));
+
+    expect(search).toHaveBeenCalledWith(expect.objectContaining({ title: "Engineer", page: 1, limit: 20 }));
+  });
+
+  it("shows pagination and advancing the page keeps the current filters", () => {
+    const search = vi.fn();
+    vi.mocked(useJobSearch).mockReturnValue({
+      result: { total: 1, referral: 0, directApply: 1, skip: 0, jobs: [pipeline], page: 1, limit: 20, totalMatches: 45 },
+      loading: false, error: null, search
+    });
+    vi.mocked(useJobStatusUpdate).mockReturnValue({ updateStatus: vi.fn(), error: null });
+
+    render(<MemoryRouter><JobSearch /></MemoryRouter>);
+
+    fireEvent.change(screen.getByPlaceholderText("e.g. Software Engineer"), { target: { value: "Engineer" } });
+    fireEvent.click(screen.getByText("Search"));
+    fireEvent.click(screen.getByText("2"));
+
+    expect(search).toHaveBeenLastCalledWith(expect.objectContaining({ title: "Engineer", page: 2, limit: 20 }));
   });
 });
