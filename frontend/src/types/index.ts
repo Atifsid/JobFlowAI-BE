@@ -5,6 +5,7 @@ export interface Job {
   location: string;
   country?: string;
   remote: boolean;
+  seniority?: string;
   employmentType?: string;
   salaryMin?: number;
   salaryMax?: number;
@@ -50,6 +51,9 @@ export interface Dashboard {
   directApply: number;
   skip: number;
   jobs: JobPipeline[];
+  page?: number;
+  limit?: number;
+  totalMatches?: number;
 }
 
 export interface Employee {
@@ -60,13 +64,17 @@ export interface Employee {
 }
 
 export interface JobSearchParams {
-  title: string;
+  title?: string;
   keywords?: string[];
+  company?: string;
   remote?: boolean;
   country?: string;
   city?: string;
   region?: string;
-  experience?: string[];
+  seniority?: string[];
+  minSalary?: number;
+  maxSalary?: number;
+  daysAgo?: number;
   page?: number;
   limit?: number;
 }
