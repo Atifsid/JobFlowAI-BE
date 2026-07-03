@@ -5,6 +5,7 @@ export interface Job {
   location: string;
   country?: string;
   remote: boolean;
+  seniority?: string;
   employmentType?: string;
   salaryMin?: number;
   salaryMax?: number;

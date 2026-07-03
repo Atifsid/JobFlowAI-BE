@@ -12,8 +12,12 @@ vi.mock("axios", () => ({
 const search: JobSearch = {
   title: "Software Engineer",
   keywords: ["python"],
+  company: "Acme",
   remote: true,
-  experience: ["Senior", "Staff"],
+  seniority: ["senior", "staff"],
+  minSalary: 90000,
+  maxSalary: 150000,
+  daysAgo: 14,
   page: 2,
   limit: 10
 };
@@ -24,7 +28,7 @@ describe("JobspediaService.search", () => {
     mockPost.mockReset();
   });
 
-  it("posts the mapped search request and only sends the first experience entry", async () => {
+  it("posts the full mapped search request and maps total through", async () => {
     mockPost.mockResolvedValue({
       data: {
         jobs: [
@@ -36,6 +40,7 @@ describe("JobspediaService.search", () => {
             city: "Berlin",
             region: null,
             country: "DE",
+            seniority: "senior",
             isRemote: true,
             salaryMin: 90000,
             salaryMax: 120000,
@@ -48,7 +53,8 @@ describe("JobspediaService.search", () => {
           }
         ],
         page: 2,
-        count: 1
+        count: 1,
+        total: 37
       }
     });
 
@@ -63,18 +69,24 @@ describe("JobspediaService.search", () => {
       expect.objectContaining({
         title: "Software Engineer",
         keywords: ["python"],
+        company: "Acme",
         remote: true,
-        experience: "Senior",
+        seniority: ["senior", "staff"],
+        minSalary: 90000,
+        maxSalary: 150000,
+        daysAgo: 14,
         page: 2,
         limit: 10
       })
     );
-    expect(result).toEqual([
+    expect(result.total).toBe(37);
+    expect(result.jobs).toEqual([
       expect.objectContaining({
         id: "abc123",
         title: "Senior Software Engineer",
         company: "Acme",
         remote: true,
+        seniority: "senior",
         salaryMin: 90000,
         salaryMax: 120000,
         applyUrl: "https://boards.greenhouse.io/acme/jobs/1",

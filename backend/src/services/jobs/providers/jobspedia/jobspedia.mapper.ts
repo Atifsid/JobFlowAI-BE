@@ -8,6 +8,7 @@ export interface JobspediaJob {
   city: string | null;
   region: string | null;
   country: string | null;
+  seniority: string | null;
   isRemote: boolean;
   salaryMin: number | null;
   salaryMax: number | null;
@@ -27,6 +28,7 @@ export const mapJobspediaJob = (job: JobspediaJob): Job => ({
     job.location ?? [job.city, job.region, job.country].filter(Boolean).join(", "),
   country: job.country ?? undefined,
   remote: job.isRemote,
+  seniority: job.seniority ?? undefined,
   salaryMin: job.salaryMin ?? undefined,
   salaryMax: job.salaryMax ?? undefined,
   currency: job.currency ?? undefined,
