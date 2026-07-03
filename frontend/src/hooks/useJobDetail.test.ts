@@ -55,4 +55,18 @@ describe("useJobDetail", () => {
 
     expect(result.current.pipeline?.status).toBe("SKIPPED");
   });
+
+  it("updateStatus() throws when the patch fails, so callers can surface the error", async () => {
+    vi.mocked(dashboardService.getDashboard).mockResolvedValue({
+      total: 1, referral: 0, directApply: 1, skip: 0,
+      jobs: [{ job: { id: "job-1" }, status: "DISCOVERED" } as never]
+    });
+    vi.mocked(jobService.updateStatus).mockRejectedValue(new Error("boom"));
+
+    const { result } = renderHook(() => useJobDetail("job-1"));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await expect(result.current.updateStatus("SKIPPED" as never)).rejects.toThrow("Failed to update status");
+    expect(result.current.pipeline?.status).toBe("DISCOVERED");
+  });
 });

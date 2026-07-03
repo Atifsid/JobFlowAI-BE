@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-02T21:34:14Z",
+  "title": "Design System: JobFlowAI",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Burnt Clay",
+        "canonical": "oklch(68% 0.13 40)",
+        "tonalRamp": ["#2e150c", "#4a2015", "#6f301f", "#96432b", "#c15f3d", "#d97757", "#e2967d", "#f7dfd5"]
+      },
+      "bg-page": {
+        "role": "neutral",
+        "displayName": "Near-black Ink",
+        "canonical": "oklch(19% 0.015 240)",
+        "tonalRamp": ["#05070a", "#0f1419", "#1a202c", "#2d3748", "#4a5568", "#718096", "#a0aec0", "#f3f4f6"]
+      },
+      "bg-surface": {
+        "role": "neutral",
+        "displayName": "Slate Panel",
+        "canonical": "oklch(25% 0.02 250)",
+        "tonalRamp": ["#0f1419", "#1a202c", "#242c3a", "#2d3748", "#3d4759", "#5a6578", "#8892a3", "#c7ccd6"]
+      },
+      "text-primary": {
+        "role": "neutral",
+        "displayName": "Bright Fog",
+        "canonical": "oklch(96% 0.005 250)",
+        "tonalRamp": ["#4a5568", "#718096", "#9ca3af", "#a0aec0", "#c7ccd6", "#d1d5db", "#e5e7eb", "#f3f4f6"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles and stat card values. The only large-scale type on any screen." },
+      "headline": { "displayName": "Headline", "purpose": "In-page section headings (e.g. 'Recent Activity')." },
+      "body": { "displayName": "Body", "purpose": "Default text: tables, cards, form labels, prose." },
+      "label": { "displayName": "Label", "purpose": "Muted supporting text: stat labels, timestamps, badges." }
+    },
+    "shadows": [
+      { "name": "ambient", "value": "0 1px 3px rgba(0, 0, 0, 0.3)", "purpose": "Default and only shadow on cards; faint ambient hint, never a lift." },
+      { "name": "ambient-elevated", "value": "0 4px 12px rgba(0, 0, 0, 0.4)", "purpose": "Reserved for true overlays (modals/popovers) if introduced; never used on cards or buttons." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "ease", "purpose": "Default transition for background-color/border-color state changes (0.2s), e.g. button and nav hover." }
+    ],
+    "breakpoints": [
+      { "name": "tablet", "value": "1023px" },
+      { "name": "mobile", "value": "767px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single primary action per view (Search Jobs, Generate Resume). Burnt Clay fill, immediate hover response, no lift.",
+      "html": "<button class=\"ds-btn-primary\">Search Jobs</button>",
+      "css": ".ds-btn-primary { font-weight: 600; padding: 8px 16px; border-radius: var(--radius-button, 4px); border: 1px solid transparent; background: var(--accent, #d97757); color: #fff; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; } .ds-btn-primary:hover { background: var(--accent-hover, #c86644); } .ds-btn-primary:focus-visible { outline: 2px solid var(--accent, #d97757); outline-offset: 2px; } .ds-btn-primary:active { background: var(--accent-hover, #c86644); } .ds-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Every non-primary action (View Tracker, Cancel, Back). Transparent with a border; hovers to Slate Hover.",
+      "html": "<button class=\"ds-btn-secondary\">View Tracker</button>",
+      "css": ".ds-btn-secondary { font-weight: 600; padding: 8px 16px; border-radius: var(--radius-button, 4px); border: 1px solid var(--border-color, #2d3748); background: transparent; color: var(--text-primary, #f3f4f6); cursor: pointer; transition: background-color 0.2s, border-color 0.2s; } .ds-btn-secondary:hover { background: var(--bg-hover, #2d3748); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--accent, #d97757); outline-offset: 2px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Base surface for stat cards, job cards, employee cards. Border + Slate Panel background carry the depth; shadow is a faint ambient hint only.",
+      "html": "<div class=\"ds-card\"><p class=\"ds-card__value\">47</p><p class=\"ds-card__label\">Jobs Searched</p></div>",
+      "css": ".ds-card { background: var(--bg-surface, #1a202c); border: 1px solid var(--border-color, #2d3748); border-radius: var(--radius-card, 6px); padding: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); } .ds-card__value { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px; color: var(--text-primary, #f3f4f6); } .ds-card__label { margin: 0; font-size: 12px; font-weight: 500; color: var(--text-muted, #9ca3af); }"
+    },
+    {
+      "name": "Badge (Success)",
+      "kind": "chip",
+      "refersTo": "badge-success",
+      "description": "Match/decision semantic tag. Tonal background at 15% opacity, full-opacity text. Four tones total (success/warning/error/neutral), never decorative.",
+      "html": "<span class=\"ds-badge ds-badge--success\">Matched</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; } .ds-badge--success { background: rgba(16, 185, 129, 0.15); color: var(--success, #10b981); }"
+    },
+    {
+      "name": "Sidebar Nav Link",
+      "kind": "nav",
+      "refersTo": "sidebar-link",
+      "description": "Desktop sidebar item. Active state gets Slate Hover background + Bright Fog text — deliberately no accent color here, to keep hierarchy quiet outside the one-signal rule.",
+      "html": "<a href=\"#\" class=\"ds-sidebar-link ds-sidebar-link--active\">Dashboard</a><a href=\"#\" class=\"ds-sidebar-link\">Job Search</a>",
+      "css": ".ds-sidebar-link { display: block; padding: 8px 12px; margin-bottom: 4px; border-radius: var(--radius-button, 4px); color: var(--text-secondary, #d1d5db); text-decoration: none; font-size: 14px; transition: background-color 0.2s, color 0.2s; } .ds-sidebar-link:hover { background: var(--bg-hover, #2d3748); } .ds-sidebar-link--active { background: var(--bg-hover, #2d3748); color: var(--text-primary, #f3f4f6); }"
+    },
+    {
+      "name": "Score Ring",
+      "kind": "custom",
+      "refersTo": "score-ring",
+      "description": "The system's one signature instrument: an SVG gauge showing the deterministic 0-100 match score. Track in Slate Hover, fill in Burnt Clay with a rounded cap, numeric score centered in Bright Fog. Stays the only circular/radial data element so it keeps its authority.",
+      "html": "<svg width=\"96\" height=\"96\" class=\"ds-score-ring\" role=\"img\" aria-label=\"Score 82 out of 100\"><circle cx=\"48\" cy=\"48\" r=\"44\" stroke=\"var(--bg-hover, #2d3748)\" stroke-width=\"8\" fill=\"none\"/><circle cx=\"48\" cy=\"48\" r=\"44\" stroke=\"var(--accent, #d97757)\" stroke-width=\"8\" fill=\"none\" stroke-dasharray=\"276.5\" stroke-dashoffset=\"49.8\" stroke-linecap=\"round\" transform=\"rotate(-90 48 48)\"/><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"var(--text-primary, #f3f4f6)\" font-size=\"20\" font-weight=\"600\">82</text></svg>",
+      "css": ".ds-score-ring circle:nth-child(2) { transition: stroke-dashoffset 0.4s ease; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Control Room",
+    "overview": "JobFlowAI's UI is a mission-control panel, not a storefront. There's one operator, one goal per screen, and the surface exists to get out of the way of a fast decision: scan the match, read the score, act, move to the next job. The near-black base reads like a console at rest; Burnt Clay is the one warm signal reserved for what actually needs attention — a score ring, a primary action, an active nav state. Everything else stays quiet on purpose.\n\nThis system explicitly rejects the generic AI-generated SaaS dashboard — no purple gradients, no hero-metric cards, no glassmorphism, no tiny uppercase eyebrows dressing up sections that don't need them. It equally rejects corporate ATS sterility — this isn't a compliance form, it's a tool one person actually wants to open. Because the job matching underneath is genuinely deterministic and explainable, the visual language should read as instrumentation — legible readouts, not persuasion.",
+    "keyCharacteristics": [
+      "Near-black base with a single warm accent, used sparingly and consistently for signal (scores, primary actions, active states)",
+      "Flat by default: borders and surface-color shifts carry hierarchy, not shadow or gradient",
+      "Dense, left-aligned, system-font typography — no display serif, no decorative type",
+      "Every screen scans in seconds: stat readouts, tables, and cards over narrative copy"
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "Burnt Clay is the only warm color on any screen. It marks exactly one thing per view: the primary action or the thing currently in focus. Status colors (green/amber/red/gray) are reserved for match/decision semantics, never used as decoration.", "section": "colors" },
+      { "name": "The One Family Rule", "body": "No second typeface, no monospace flourish for 'technical' feel. Hierarchy comes entirely from size, weight, and color-muting within one system sans.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. The border and the Slate Panel/Ink contrast are what separate a card from the page — shadow is a supporting whisper, never the primary signal.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep Burnt Clay (#d97757) to one purpose per screen — the primary action or the thing currently in focus. Everything else stays neutral.",
+      "Do use borders (1px solid #2d3748) as the primary depth/separation cue, on Slate Panel (#1a202c) over Near-black Ink (#0f1419).",
+      "Do keep all four status colors (green/amber/red/gray) mapped strictly to match/decision semantics — never decorative.",
+      "Do keep every screen scannable in seconds: stat readouts, tables, and the score ring over narrative copy or long-form explanation.",
+      "Do use the single system-sans stack for everything; differentiate purely by size, weight, and color-muting."
+    ],
+    "donts": [
+      "Don't introduce a purple/gradient palette, hero-metric cards, glassmorphism, or tiny uppercase tracked eyebrows — the generic AI-generated SaaS dashboard look this system explicitly rejects.",
+      "Don't build dense enterprise-ATS-style forms (Workday/Greenhouse-style) — sterile, bureaucratic layouts are an explicit anti-reference.",
+      "Don't add shadow, glow, or lift beyond the Ambient shadow (0 1px 3px rgba(0,0,0,0.3)) to cards or buttons on hover. Flat-by-default holds even on interaction.",
+      "Don't use border-left/border-right as a colored accent stripe on cards or list items.",
+      "Don't add a second typeface or a monospace variant 'for a technical feel' — the One Family Rule holds.",
+      "Don't use Burnt Clay for more than one element's worth of signal per screen — if two things are both accent-colored, one of them is wrong."
+    ]
+  }
+}

@@ -7,4 +7,9 @@ describe("Skeleton", () => {
     render(<Skeleton />);
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
+
+  it("applies the circle modifier when requested", () => {
+    render(<Skeleton circle />);
+    expect(screen.getByRole("status")).toHaveClass("skeleton--circle");
+  });
 });

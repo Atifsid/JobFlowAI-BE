@@ -5,6 +5,7 @@ import { useJobStatusUpdate } from "../hooks/useJobStatusUpdate";
 import JobCard from "../components/features/JobCard";
 import JobDetailPanel from "../components/features/JobDetailPanel";
 import Button from "../components/common/Button";
+import type { JobStatus } from "../types";
 
 export default function JobSearch() {
   const [title, setTitle] = useState("");
@@ -20,10 +21,10 @@ export default function JobSearch() {
 
   const selected = result?.jobs.find(j => j.job.id === selectedId) ?? null;
 
-  const onSkip = async () => {
+  const onStatusChange = async (status: JobStatus) => {
     if (!selected) return;
-    await updateStatus(selected.job.id, "SKIPPED");
-    setSelectedId(null);
+    await updateStatus(selected.job.id, status);
+    if (status === "SKIPPED") setSelectedId(null);
   };
 
   return (
@@ -64,9 +65,9 @@ export default function JobSearch() {
         {selected && (
           <div className="job-search-detail">
             <button className="back-button" onClick={() => setSelectedId(null)}>
-              Back
+              ← Back
             </button>
-            <JobDetailPanel pipeline={selected} onSkip={onSkip} />
+            <JobDetailPanel pipeline={selected} onStatusChange={onStatusChange} />
           </div>
         )}
       </div>

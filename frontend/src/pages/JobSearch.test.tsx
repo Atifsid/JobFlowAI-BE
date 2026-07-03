@@ -4,14 +4,17 @@ import { MemoryRouter } from "react-router-dom";
 import JobSearch from "./JobSearch";
 import { useJobSearch } from "../hooks/useJobSearch";
 import { useJobStatusUpdate } from "../hooks/useJobStatusUpdate";
+import type { JobPipeline } from "../types";
 
 vi.mock("../hooks/useJobSearch");
 vi.mock("../hooks/useJobStatusUpdate");
 
-const pipeline = {
+const pipeline: JobPipeline = {
   job: { id: "1", title: "Senior Engineer", company: "Acme", location: "NYC", remote: false, description: "desc", skills: [], applyUrl: "https://x.com", source: "test" },
   score: { score: 68, missingSkills: [], strengths: [], weaknesses: [], recommendation: "Apply" },
-  decision: "DIRECT_APPLY" as const, actions: [], status: "ANALYZED" as const
+  decision: "DIRECT_APPLY",
+  actions: ["GENERATE_RESUME", "GENERATE_COVER_LETTER", "APPLY"],
+  status: "ANALYZED"
 };
 
 describe("JobSearch", () => {

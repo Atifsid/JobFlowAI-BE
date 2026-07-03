@@ -7,26 +7,13 @@ import { referralService } from "../services/referralService";
 import DataTable, { type Column } from "../components/common/DataTable";
 import Badge from "../components/common/Badge";
 import Button from "../components/common/Button";
-import type { BadgeTone } from "../components/common/Badge";
+import { ALL_STATUSES, labelForStatus, toneForStatus } from "../lib/jobLabels";
 import type { JobPipeline, JobStatus } from "../types";
 
 type BulkStatus = "idle" | "pending" | "success" | "error";
 type StatusTab = "ALL" | JobStatus;
 
-const ALL_STATUSES: JobStatus[] = [
-  "DISCOVERED", "ANALYZED", "RESUME_GENERATED", "EMPLOYEES_FOUND",
-  "REFERRAL_READY", "REFERRAL_SENT", "APPLIED", "REJECTED",
-  "INTERVIEW", "OFFER", "HIRED", "SKIPPED"
-];
-
 const TABS: StatusTab[] = ["ALL", "DISCOVERED", "REFERRAL_READY", "APPLIED", "REJECTED"];
-
-const toneForStatus = (status: JobStatus): BadgeTone => {
-  if (["APPLIED", "REFERRAL_SENT", "OFFER", "HIRED"].includes(status)) return "success";
-  if (["REFERRAL_READY", "EMPLOYEES_FOUND", "RESUME_GENERATED"].includes(status)) return "warning";
-  if (["REJECTED", "SKIPPED"].includes(status)) return "error";
-  return "neutral";
-};
 
 export default function ApplicationTracker() {
   const { dashboard, loading, error, updateStatus } = useTracker();
@@ -83,7 +70,7 @@ export default function ApplicationTracker() {
     },
     { key: "title", label: "Job", render: row => <Link to={`/jobs/${row.job.id}`}>{row.job.title}</Link> },
     { key: "company", label: "Company", render: row => row.job.company },
-    { key: "status", label: "Status", render: row => <Badge tone={toneForStatus(row.status)}>{row.status}</Badge> },
+    { key: "status", label: "Status", render: row => <Badge tone={toneForStatus(row.status)}>{labelForStatus(row.status)}</Badge> },
     {
       key: "action",
       label: "Action",
@@ -91,7 +78,7 @@ export default function ApplicationTracker() {
       render: row => (
         <select value={row.status} onChange={e => updateStatus(row.job.id, e.target.value as JobStatus)}>
           {ALL_STATUSES.map(s => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>{labelForStatus(s)}</option>
           ))}
         </select>
       )

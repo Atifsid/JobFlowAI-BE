@@ -26,7 +26,11 @@ export function useJobDetail(jobId: string | undefined) {
   const updateStatus = async (status: JobStatus) => {
     if (!jobId) return;
     const updated = await patchStatus(jobId, status);
-    if (updated) setPipeline(updated);
+    if (updated) {
+      setPipeline(updated);
+    } else {
+      throw new Error("Failed to update status");
+    }
   };
 
   return { pipeline, loading, error, updateStatus };

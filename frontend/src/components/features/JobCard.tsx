@@ -1,5 +1,6 @@
 import Card from "../common/Card";
 import Badge from "../common/Badge";
+import { toneForDecision, labelForDecision } from "../../lib/jobLabels";
 import type { JobPipeline } from "../../types";
 
 interface JobCardProps {
@@ -7,12 +8,6 @@ interface JobCardProps {
   selected?: boolean;
   onClick?: () => void;
 }
-
-const toneForDecision = (decision: JobPipeline["decision"]) => {
-  if (decision === "REFERRAL") return "success" as const;
-  if (decision === "DIRECT_APPLY") return "warning" as const;
-  return "neutral" as const;
-};
 
 export default function JobCard({ pipeline, selected, onClick }: JobCardProps) {
   const { job, score, decision } = pipeline;
@@ -24,9 +19,16 @@ export default function JobCard({ pipeline, selected, onClick }: JobCardProps) {
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
     >
-      <p className="text-heading">{job.title}</p>
-      <p className="text-body">{job.company}</p>
-      <Badge tone={toneForDecision(decision)}>{score.score}</Badge>
+      <p className="text-heading job-card__title">{job.title}</p>
+      <p className="text-body job-card__company">{job.company}</p>
+      <p className="text-small job-card__meta">
+        {job.location}
+        {job.remote ? " · Remote" : ""}
+      </p>
+      <div className="job-card__footer">
+        <span className="job-card__score">{score.score}</span>
+        <Badge tone={toneForDecision(decision)}>{labelForDecision(decision)}</Badge>
+      </div>
     </Card>
   );
 }
