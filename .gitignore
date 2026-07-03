@@ -54,5 +54,4 @@ test-results/
 .claude/
 CHANGELOG.md
 CLAUDE.md
-/docs
-Claude_frontend.md
+docs/
