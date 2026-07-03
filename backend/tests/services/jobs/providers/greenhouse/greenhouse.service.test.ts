@@ -28,7 +28,7 @@ describe("GreenhouseProvider.search", () => {
     delete process.env.GREENHOUSE_BOARD_TOKENS;
   });
 
-  it("returns an empty array without calling axios when no boards are configured", async () => {
+  it("returns an empty result without calling axios when no boards are configured", async () => {
     process.env.GREENHOUSE_BOARD_TOKENS = "";
     const { default: greenhouseProvider } = await import(
       "../../../../../src/services/jobs/providers/greenhouse/greenhouse.service"
@@ -37,10 +37,10 @@ describe("GreenhouseProvider.search", () => {
     const result = await greenhouseProvider.search({ title: "Engineer" });
 
     expect(mockGet).not.toHaveBeenCalled();
-    expect(result).toEqual([]);
+    expect(result).toEqual({ jobs: [], total: 0 });
   });
 
-  it("fetches every configured board and maps jobs matching the title", async () => {
+  it("fetches every configured board and maps jobs matching the title, with total set", async () => {
     process.env.GREENHOUSE_BOARD_TOKENS = "acme, other-co";
     mockGet.mockImplementation((url: string) => {
       if (url.includes("/acme/")) {
@@ -69,7 +69,8 @@ describe("GreenhouseProvider.search", () => {
       "https://boards-api.greenhouse.io/v1/boards/other-co/jobs",
       { params: { content: true } }
     );
-    expect(result).toEqual([
+    expect(result.total).toBe(1);
+    expect(result.jobs).toEqual([
       expect.objectContaining({
         id: "greenhouse-1",
         title: "Software Engineer",
@@ -97,6 +98,21 @@ describe("GreenhouseProvider.search", () => {
     const search: JobSearch = { title: "Engineer", remote: true };
     const result = await greenhouseProvider.search(search);
 
-    expect(result).toEqual([]);
+    expect(result).toEqual({ jobs: [], total: 0 });
+  });
+
+  it("returns every board's jobs when no title filter is given", async () => {
+    process.env.GREENHOUSE_BOARD_TOKENS = "acme";
+    mockGet.mockResolvedValue({
+      data: { jobs: [buildGreenhouseJob(), buildGreenhouseJob({ id: 2, title: "Sales Rep" })] }
+    });
+
+    const { default: greenhouseProvider } = await import(
+      "../../../../../src/services/jobs/providers/greenhouse/greenhouse.service"
+    );
+
+    const result = await greenhouseProvider.search({});
+
+    expect(result.total).toBe(2);
   });
 });

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Job } from "../../../../models/job.model";
 import { JobSearch } from "../../../../models/job-search.model";
-import { JobProvider } from "../../job-provider.types";
+import { JobProvider, JobSearchResult } from "../../job-provider.types";
 import { GreenhouseJob, mapGreenhouseJob } from "./greenhouse.mapper";
 import { env } from "../../../../config/env";
 
@@ -11,15 +11,16 @@ import { env } from "../../../../config/env";
 // keyword search across all companies - so board tokens are configured
 // via GREENHOUSE_BOARD_TOKENS and results are filtered client-side.
 class GreenhouseProvider implements JobProvider {
-  async search(search: JobSearch): Promise<Job[]> {
+  async search(search: JobSearch): Promise<JobSearchResult> {
     const tokens = this.boardTokens();
-    if (tokens.length === 0) return [];
+    if (tokens.length === 0) return { jobs: [], total: 0 };
 
     const boards = await Promise.all(
       tokens.map(token => this.fetchBoard(token))
     );
 
-    return boards.flat().filter(job => this.matches(job, search));
+    const jobs = boards.flat().filter(job => this.matches(job, search));
+    return { jobs, total: jobs.length };
   }
 
   private boardTokens(): string[] {
@@ -39,13 +40,10 @@ class GreenhouseProvider implements JobProvider {
   }
 
   private matches(job: Job, search: JobSearch): boolean {
-    const titleMatches = job.title
-      .toLowerCase()
-      .includes(search.title.toLowerCase());
-
-    if (!titleMatches) return false;
+    if (search.title && !job.title.toLowerCase().includes(search.title.toLowerCase())) {
+      return false;
+    }
     if (search.remote && !job.remote) return false;
-
     return true;
   }
 }
