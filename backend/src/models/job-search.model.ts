@@ -1,17 +1,14 @@
 export interface JobSearch {
-  title: string;
+  title?: string;
   keywords?: string[];
-  companyKeywords?: string[];
+  company?: string;
   city?: string;
   region?: string;
   country?: string;
   remote?: boolean;
-  experience?: string[];
-  jobTypes?: string[];
+  seniority?: string[];
   minSalary?: number;
   maxSalary?: number;
-  currency?: string;
-  visa?: boolean;
   daysAgo?: number;
   page?: number;
   limit?: number;
