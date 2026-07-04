@@ -27,42 +27,62 @@ one or two clicks, move on.
 
 ## Brand Personality
 
-Fast, focused, no-nonsense. A utilitarian power tool, not a showcase —
-dense information, minimal chrome, optimized for scanning speed over
-decorative polish. Closer in feel to a terminal or IDE than a consumer
-SaaS dashboard: quiet confidence rather than persuasion, because there's
-no one here to persuade.
+Polished, modern, premium SaaS — comparable to Vercel, Linear, Stripe
+Dashboard, Clerk, or Supabase. This superseded an earlier "Control Room /
+terminal" direction (2026-07-04): the user explicitly chose the
+SaaS-comparable direction on 2026-07-05 when redesigning the frontend
+with shadcn/ui, even though it's a single-user tool — the reasoning is
+that "single-user" describes the audience, not a reason to look
+utilitarian. Confident, clean, and considered, the way those reference
+products feel — not maximalist, not decorative for its own sake, but not
+deliberately stripped-down either.
 
 ## Anti-references
 
-- **Generic AI-generated SaaS dashboard** — purple gradients, hero-metric
-  cards, glassmorphism, tiny uppercase eyebrows. The templated look this
-  tool should never resemble, especially since match scoring here is
-  genuinely deterministic and explainable — it shouldn't be dressed up
-  in the same visual language as tools that fake that.
+- **Generic AI-generated SaaS dashboard clichés** — purple gradients,
+  glassmorphism-as-default, tiny uppercase tracked eyebrows on every
+  section, gradient text, side-stripe borders as accents, the literal
+  "big number + small label + gradient accent" hero-metric template.
+  Premium SaaS products avoid these too — the goal is Vercel/Linear/
+  Stripe-quality polish, not templated AI-generated polish.
 - **Corporate ATS software** — Workday/Greenhouse-style dense enterprise
   forms. Sterile, bureaucratic, built for HR compliance rather than a
-  single person moving fast.
+  single person moving fast. Still an anti-reference: "premium SaaS"
+  doesn't mean "enterprise form density."
+- **Fabricated data.** This app has one real user and one real backend —
+  never dress up the UI with sections that imply data the API doesn't
+  have (saved jobs, recommendations, a resume score endpoint, a
+  notifications/user-profile system). Ground every section in what
+  `frontend/src/types/index.ts` and the backend actually return; design
+  a real empty state instead of inventing content.
 
 ## Design Principles
 
-- **Speed over spectacle.** Every screen optimizes for "scan, decide,
-  act" in seconds. No animation, copy, or layout choice should slow that
-  down in the name of looking impressive.
-- **Density over decoration.** This is a single-user power tool, not a
-  marketing surface — favor information density and tight, purposeful
-  spacing over generous whitespace used for its own sake.
+- **Premium polish over utilitarian bareness.** Comparable in visual
+  quality to Vercel/Linear/Stripe/Clerk/Supabase — considered spacing,
+  clear hierarchy, purposeful hover/focus/active states, subtle
+  elevation where it earns its place (see DESIGN.md's Elevation
+  section, updated 2026-07-05 to allow restrained shadow/hover-lift on
+  genuinely interactive surfaces).
+  - **Fast decisions, still.** The underlying job-to-be-done hasn't
+  changed — scan the state of every job, act in one or two clicks, move
+  on. Polish should never come at the cost of scanability: hierarchy and
+  density choices still serve "decide fast," they're just no longer
+  expressed through bare-bones/flat-only styling.
 - **Explainable, not opaque.** Match scoring, decisions, and next actions
   are deterministic and reasoned (see CLAUDE.md's matcher/decision
   pipeline) — the UI should show *why* a job scored the way it did, not
   bury it behind a black-box-style badge.
-- **Quiet confidence, not corporate stiffness.** Functional and precise
-  without sliding into sterile ATS-form territory — this is a personal
-  tool the user actually wants to open.
 - **One master resume, tailored views.** The backend has one source of
   truth (master resume) rendered differently per job; the frontend
-  should mirror that — consistent presentation patterns reused across
-  jobs, not bespoke one-off layouts per screen.
+  should mirror that — consistent presentation patterns (shared shadcn
+  components, one design language) reused across pages, not bespoke
+  one-off layouts per screen.
+- **Real data only.** Every section maps to an actual API field or a
+  value computed from real API data (e.g. an average score derived from
+  real per-job scores). No mock data, no hardcoded placeholder content,
+  no sections implying capabilities (auth, notifications, saved/
+  recommended jobs) that don't exist in the backend.
 
 ## Accessibility & Inclusion
 

@@ -1,6 +1,6 @@
 ---
 name: JobFlowAI
-description: A dark, dense mission-control panel for running your own job search on autopilot.
+description: A premium, dark-themed SaaS dashboard for running your own job search on autopilot — shadcn/ui-based, comparable to Vercel/Linear/Stripe/Clerk/Supabase.
 colors:
   bg-page: "#0f1419"
   bg-surface: "#1a202c"
@@ -103,17 +103,19 @@ components:
 
 ## 1. Overview
 
-**Creative North Star: "The Control Room"**
+**Creative North Star: "Premium SaaS cockpit"**
 
-JobFlowAI's UI is a mission-control panel, not a storefront. There's one operator, one goal per screen, and the surface exists to get out of the way of a fast decision: scan the match, read the score, act, move to the next job. The near-black base reads like a console at rest; Burnt Clay is the one warm signal reserved for what actually needs attention — a score ring, a primary action, an active nav state. Everything else stays quiet on purpose.
+(Superseded 2026-07-04's "Control Room" direction on 2026-07-05 — the user explicitly chose a polished, modern SaaS aesthetic comparable to Vercel, Linear, Stripe Dashboard, Clerk, and Supabase over the earlier terminal/console metaphor, while keeping the same real data and single-user scope.)
 
-This system explicitly rejects the generic AI-generated SaaS dashboard — no purple gradients, no hero-metric cards, no glassmorphism, no tiny uppercase eyebrows dressing up sections that don't need them. It equally rejects corporate ATS sterility — this isn't a compliance form, it's a tool one person actually wants to open. Because the job matching underneath is genuinely deterministic and explainable (see the project's matcher/decision pipeline), the visual language should read as instrumentation — legible readouts, not persuasion.
+JobFlowAI's UI should read like those reference products: confident, clean, well-considered — not a bare-bones utility screen, but not maximalist or decorative either. The near-black base and Burnt Clay accent carry over unchanged (they already work, and a warm accent against near-black reads as premium in exactly the products this now aims to resemble); what changes is the willingness to use restrained elevation, hover/active motion, and card-based composition the way Linear/Vercel do, rather than treating every shadow or lift as "decorative."
+
+Still explicitly rejected: templated AI-generated SaaS clichés (purple gradients, glassmorphism-as-default, gradient text, tiny uppercase tracked eyebrows on every section, the literal big-number-plus-gradient-accent hero-metric template) and corporate ATS sterility (Workday/Greenhouse-style dense enterprise forms). "Premium" means Vercel/Linear/Stripe-quality polish, not either of those extremes.
 
 **Key Characteristics:**
-- Near-black base with a single warm accent, used sparingly and consistently for signal (scores, primary actions, active states)
-- Flat by default: borders and surface-color shifts carry hierarchy, not shadow or gradient
-- Dense, left-aligned, system-font typography — no display serif, no decorative type
-- Every screen scans in seconds: stat readouts, tables, and cards over narrative copy
+- Near-black base with a single warm accent, used sparingly and consistently for signal (scores, primary actions, active/current states)
+- Restrained elevation: subtle shadows and hover-lift are allowed on genuinely interactive surfaces (cards that navigate somewhere, buttons) — still never gaudy, never a glow/blur effect
+- Dense-but-breathable, left-aligned, system-font typography — no display serif, no decorative type
+- Every screen scans quickly: stat readouts, compact row lists, and cards over narrative copy — polish serves scanability, it doesn't replace it
 
 ## 2. Colors
 
@@ -159,18 +161,19 @@ A near-black console with one warm accent color and a restrained semantic set fo
 
 ## 4. Elevation
 
-Flat by default; borders do the work. Cards sit on Slate Panel against Near-black Ink with a 1px `border-color` border — that value shift plus the border is the primary depth cue. A shadow exists (`0 1px 3px rgba(0,0,0,0.3)`) but it's a faint ambient hint, not a design statement; it should never read as "lifted" or "floating." Nothing in this system uses a dramatic shadow, glow, or blur to imply depth — that reads as decorative, not instrumented.
+Borders still do most of the work — cards sit on Slate Panel against Near-black Ink with a 1px `border-color` border, and that value shift plus the border remains the primary depth cue at rest. What changed from the earlier flat-only direction: genuinely interactive cards (ones that navigate somewhere on click — a recent-activity row, a job card) may lift subtly on hover, the way Linear/Vercel treat clickable rows. This is a state change that reinforces interactivity, not decoration applied at rest.
 
 ### Shadow Vocabulary
-- **Ambient** (`box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3)`): Default and only shadow on cards. Barely perceptible; reinforces the border, doesn't replace it.
-- **Ambient Elevated** (`box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4)`): Reserved for genuinely overlaid surfaces (modals, popovers) if/when they're introduced — not for cards or buttons.
+- **Ambient** (`box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3)`): Default resting shadow on cards. Barely perceptible; reinforces the border, doesn't replace it.
+- **Ambient Elevated** (`box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4)`): Hover/active state for interactive cards and rows (promoted from "modals only" — now also the hover treatment for clickable surfaces), plus genuinely overlaid surfaces (dialogs, popovers, the command palette).
+- Transitions on hover/lift: plain `transform`/`box-shadow` fade, ease-out, ~150-200ms. No bounce/elastic easing (matches the general no-gaudy-motion rule).
 
 ### Named Rules
-**The Flat-By-Default Rule.** Surfaces are flat at rest. The border and the Slate Panel/Ink contrast are what separate a card from the page — shadow is a supporting whisper, never the primary signal.
+**The Purposeful Elevation Rule.** Borders + Slate Panel/Ink contrast still define a card at rest. Shadow lift is reserved for hover/active states on surfaces that are actually clickable — it's a state change communicating "this responds to you," never a static decorative flourish on non-interactive containers.
 
 ## 5. Components
 
-Every control should feel utilitarian and immediate: fast, legible state changes, no decorative flourish. Controls are instruments, not marketing surfaces — a button press or a hover should feel instant and functional, not performative.
+Every control should feel considered and responsive: clear, legible state changes with a touch of tactile polish (subtle transform/shadow on press or hover where it fits) — the Vercel/Linear/Stripe standard, not decorative flourish for its own sake.
 
 ### Buttons
 - **Shape:** 4px radius (`--radius-button`) — barely rounded, deliberately understated.
@@ -186,8 +189,8 @@ Every control should feel utilitarian and immediate: fast, legible state changes
 ### Cards / Containers
 - **Corner Style:** 6px radius (`--radius-card`) — slightly softer than buttons, still understated.
 - **Background:** Slate Panel (`#1a202c`) on Near-black Ink page background.
-- **Shadow Strategy:** Ambient shadow only (see Elevation). Never elevated further on hover; cards aren't clickable surfaces that need to "lift."
-- **Border:** 1px solid `border-color` (`#2d3748`) — this, not the shadow, is the primary edge definition.
+- **Shadow Strategy:** Ambient shadow at rest. Cards/rows that navigate somewhere on click get Ambient Elevated + a subtle lift on hover (see Elevation) — non-interactive containers (e.g. a stat card with no click target) stay at Ambient only, since lift on a non-clickable surface would be a false affordance.
+- **Border:** 1px solid `border-color` (`#2d3748`) — the primary edge definition at rest; on hover, interactive cards may also shift the border toward Slate Hover or Burnt Clay depending on context.
 - **Internal Padding:** `16px` (`--space-lg`).
 
 ### Inputs / Fields
@@ -196,12 +199,15 @@ Every control should feel utilitarian and immediate: fast, legible state changes
 - **Error / Disabled:** Error border shifts to Signal Red with helper text in the same red; disabled follows the button disabled treatment (0.6 opacity).
 
 ### Navigation
-- **Sidebar** (desktop, ≥1024px): 220px fixed-width column, `border-right` 1px `border-color`. Links are body-size, Mid Fog text, `8px 12px` padding, 4px radius. Active link gets Slate Hover background and Bright Fog text — no accent color on the sidebar itself, hierarchy stays quiet here.
-- **Bottom Tabs** (mobile/tablet, <1024px): Fixed bottom bar, Slate Panel background, `border-top` 1px `border-color`. Links are centered, 12px text, Mid Fog default. Active tab is the one place mobile nav uses Burnt Clay directly on text color — the signal color marking "you are here."
-- **Header:** Single-row bar, `border-bottom` 1px `border-color`, product name at Headline scale. No search, no user menu — single-user tool, nothing to manage here.
+
+(Updated 2026-07-05 — the sidebar/bottom-tabs shell described here previously was replaced by a shadcn/ui `Sidebar` + `AppShell` during the Foundation phase of the shadcn redesign; this section now describes what's actually built, under `src/components/layout/`.)
+
+- **Sidebar** (desktop/tablet, shadcn `Sidebar` with `collapsible="icon"`): persistent column, collapsible to an icon rail. Nav items (Dashboard, Job Search, Tracker) use `SidebarMenuButton` — Mid Fog text at rest, Slate Hover background + Bright Fog text when active. No accent color on the sidebar itself; hierarchy stays quiet here, consistent with the One Signal Rule.
+- **Mobile** (<768px, shadcn breakpoint): sidebar becomes a `Sheet`-based drawer, triggered from the header's `SidebarTrigger`.
+- **Header:** Sticky single-row bar, `border-bottom` 1px `border-color`. Contains the sidebar trigger, a route-derived breadcrumb trail, and a ⌘K command-palette trigger (jump to any tracked job by title/company — real data via `dashboardService`, not a static search). No user profile dropdown, no notification bell — still correct that there's nothing to manage there (no auth/notifications API), but the header is no longer literally "no search": the command palette is a real, data-backed feature, not a decorative search box.
 
 ### Score Ring (signature component)
-The SVG score circle is the system's one custom instrument: a ring track in Slate Hover, filled proportionally in Burnt Clay with a rounded stroke cap, numeric score centered in Bright Fog Display-weight text. It's the clearest expression of the Control Room metaphor — a literal gauge — and should stay the only circular/radial data element in the system so it keeps its authority.
+The SVG score circle is the system's one custom instrument: a ring track in Slate Hover, filled proportionally in Burnt Clay with a rounded stroke cap, numeric score centered in Bright Fog Display-weight text. It should stay the only circular/radial data element in the system so it keeps its authority as the one signature gauge.
 
 ## 6. Do's and Don'ts
 
@@ -213,9 +219,10 @@ The SVG score circle is the system's one custom instrument: a ring track in Slat
 - **Do** use the single system-sans stack for everything; differentiate purely by size, weight, and color-muting.
 
 ### Don't:
-- **Don't** introduce a purple/gradient palette, hero-metric cards, glassmorphism, or tiny uppercase tracked eyebrows — the generic AI-generated SaaS dashboard look this system explicitly rejects.
+- **Don't** introduce a purple/gradient palette, gradient text, glassmorphism-as-default, tiny uppercase tracked eyebrows on every section, or the literal big-number-plus-gradient-accent hero-metric template — the templated AI-generated SaaS look, not the genuine Vercel/Linear/Stripe polish this system now targets.
 - **Don't** build dense enterprise-ATS-style forms (Workday/Greenhouse-style) — sterile, bureaucratic layouts are an explicit anti-reference.
-- **Don't** add shadow, glow, or lift beyond the Ambient shadow (`0 1px 3px rgba(0,0,0,0.3)`) to cards or buttons on hover. Flat-by-default holds even on interaction.
+- **Don't** add hover lift/shadow to a card or container that has no click target — elevation-on-hover communicates interactivity, so it's a false affordance on something that doesn't respond to a click.
 - **Don't** use `border-left`/`border-right` as a colored accent stripe on cards or list items. If something needs to stand out, use the badge/tint vocabulary or the accent color directly, not a stripe.
 - **Don't** add a second typeface or a monospace variant "for a technical feel" — the One Family Rule holds; hierarchy comes from size/weight/color only.
 - **Don't** use Burnt Clay for more than one element's worth of signal per screen — if two things are both accent-colored, one of them is wrong.
+- **Don't** invent UI for capabilities the backend doesn't have (auth/profile, notifications, saved/recommended jobs, a resume-score endpoint) — ground every section in real data (see PRODUCT.md's Anti-references).
