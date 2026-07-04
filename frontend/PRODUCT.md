@@ -37,6 +37,15 @@ utilitarian. Confident, clean, and considered, the way those reference
 products feel — not maximalist, not decorative for its own sake, but not
 deliberately stripped-down either.
 
+**Color, specifically (revised same day, second pass):** monochrome —
+shadcn/ui's own stock black/white/gray dark theme, no custom brand hue.
+The first pass tried a warm terracotta accent; the user saw it rendered
+and asked to "follow the theme of shadcn... black and white... keep it
+minimal" instead. Color is reserved entirely for status semantics
+(success/warning/error/neutral job-decision states) — not used for
+primary actions, nav, or brand identity. See DESIGN.md's Color-Is-
+Function Rule.
+
 ## Anti-references
 
 - **Generic AI-generated SaaS dashboard clichés** — purple gradients,

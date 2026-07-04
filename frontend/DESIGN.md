@@ -2,24 +2,28 @@
 name: JobFlowAI
 description: A premium, dark-themed SaaS dashboard for running your own job search on autopilot — shadcn/ui-based, comparable to Vercel/Linear/Stripe/Clerk/Supabase.
 colors:
-  # Neutral scale re-tinted 2026-07-05: warm hue (~45°, matching --accent's
-  # hue of ~39°) instead of the previous cool blue-slate (~250°), which
-  # visually clashed with the accent. --neutral and --error were also
-  # lightened so badge text clears 4.5:1 contrast against their own tinted
-  # badge backgrounds (previously ~2.9:1 and ~3.3:1 respectively).
-  bg-page: "#120c09"
-  bg-surface: "#201916"
-  bg-hover: "#342c28"
-  accent: "#d97757"
-  accent-hover: "#c86644"
+  # Went fully monochrome 2026-07-05 (second palette revision same day):
+  # user tried the warm-terracotta-accent direction rendered, didn't like
+  # it, and asked for "the theme of shadcn... black and white... minimal"
+  # instead. These are shadcn's own stock dark-mode "neutral" values
+  # (oklch, chroma 0 throughout) converted to hex — no brand hue at all.
+  # Status colors are the one deliberate exception, kept per explicit
+  # instruction: real semantic meaning (job decision/status), not brand
+  # decoration, so they stay colored while everything else goes gray.
+  bg-page: "#0a0a0a"
+  bg-surface: "#171717"
+  bg-hover: "#262626"
+  accent: "#e5e5e5"
+  accent-hover: "#d4d4d4"
+  accent-foreground: "#171717"
   success: "#10b981"
   warning: "#f59e0b"
-  error: "#ff5b57"
-  neutral: "#a79c97"
-  text-primary: "#f7f0ed"
-  text-secondary: "#d4ccc8"
-  text-muted: "#9f9692"
-  border-color: "#342c28"
+  error: "#ff6467"
+  neutral: "#a1a1a1"
+  text-primary: "#fafafa"
+  text-secondary: "#d4d4d4"
+  text-muted: "#a1a1a1"
+  border-color: "#262626"
 typography:
   display:
     fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
@@ -59,12 +63,12 @@ spacing:
 components:
   button-primary:
     backgroundColor: "{colors.accent}"
-    textColor: "#ffffff"
+    textColor: "{colors.accent-foreground}"
     rounded: "{rounded.button}"
     padding: "8px 16px"
   button-primary-hover:
     backgroundColor: "{colors.accent-hover}"
-    textColor: "#ffffff"
+    textColor: "{colors.accent-foreground}"
     rounded: "{rounded.button}"
     padding: "8px 16px"
   button-secondary:
@@ -108,44 +112,46 @@ components:
 
 ## 1. Overview
 
-**Creative North Star: "Premium SaaS cockpit"**
+**Creative North Star: "Monochrome instrument panel"**
 
-(Superseded 2026-07-04's "Control Room" direction on 2026-07-05 — the user explicitly chose a polished, modern SaaS aesthetic comparable to Vercel, Linear, Stripe Dashboard, Clerk, and Supabase over the earlier terminal/console metaphor, while keeping the same real data and single-user scope.)
+(Second revision, same day — 2026-07-05. The "Premium SaaS cockpit" direction above kept a warm terracotta brand accent; the user looked at the rendered result, didn't like it, and asked to "follow the theme of shadcn... black and white... keep it minimal" instead. This supersedes the warm-accent direction — no brand hue anywhere now.)
 
-JobFlowAI's UI should read like those reference products: confident, clean, well-considered — not a bare-bones utility screen, but not maximalist or decorative either. The near-black base and Burnt Clay accent carry over unchanged (they already work, and a warm accent against near-black reads as premium in exactly the products this now aims to resemble); what changes is the willingness to use restrained elevation, hover/active motion, and card-based composition the way Linear/Vercel do, rather than treating every shadow or lift as "decorative."
+JobFlowAI's UI is literally shadcn/ui's own stock dark "neutral" theme: near-black background, near-white foreground, grayscale surfaces, a light-gray/white primary (shadcn's standard dark-mode convention — an inverted, near-white button rather than a colored one). The only color left in the entire system is functional: the four status tones (success/warning/error/neutral) that carry real job-decision/status meaning. Nothing is colored for brand or decoration.
 
-Still explicitly rejected: templated AI-generated SaaS clichés (purple gradients, glassmorphism-as-default, gradient text, tiny uppercase tracked eyebrows on every section, the literal big-number-plus-gradient-accent hero-metric template) and corporate ATS sterility (Workday/Greenhouse-style dense enterprise forms). "Premium" means Vercel/Linear/Stripe-quality polish, not either of those extremes.
+Still explicitly rejected: templated AI-generated SaaS clichés (purple gradients, glassmorphism-as-default, gradient text, tiny uppercase tracked eyebrows on every section, the literal big-number-plus-gradient-accent hero-metric template) and corporate ATS sterility (Workday/Greenhouse-style dense enterprise forms).
 
 **Key Characteristics:**
-- Near-black base with a single warm accent, used sparingly and consistently for signal (scores, primary actions, active/current states)
+- Pure grayscale base and primary (chroma 0 throughout) — no brand hue anywhere
+- Color exists only as functional signal: the four status tones, never used decoratively
 - Restrained elevation: subtle shadows and hover-lift are allowed on genuinely interactive surfaces (cards that navigate somewhere, buttons) — still never gaudy, never a glow/blur effect
 - Dense-but-breathable, left-aligned, system-font typography — no display serif, no decorative type
 - Every screen scans quickly: stat readouts, compact row lists, and cards over narrative copy — polish serves scanability, it doesn't replace it
 
 ## 2. Colors
 
-A near-black console with one warm accent color and a restrained semantic set for status; everything else is grayscale.
+A near-black, near-white grayscale system with a restrained semantic set for status; nothing else is colored.
 
 ### Primary
-- **Burnt Clay** (`#d97757`): The single accent. Used for primary buttons, the active nav state, and the score-ring fill — signals "this is the thing to look at or act on." Reserved deliberately; if everything is Burnt Clay, nothing is.
-- **Burnt Clay Hover** (`#c86644`): Darker step for primary button hover/press states only.
+- **Primary (light gray/white)** (`#e5e5e5`): The primary action color — used for primary buttons, the active nav state, and the score-ring fill. Not a brand hue; it's shadcn's standard dark-mode "inverted" primary (light surface, dark text). Reserved for the one primary action per view.
+- **Primary Hover** (`#d4d4d4`): Slightly dimmer step for primary button hover/press states.
+- **Primary Foreground** (`#171717`): Dark text/icon color used on top of the light Primary surface (buttons, the active sidebar item's icon if it needs contrast).
 
 ### Neutral
-- **Near-black Ink** (`#120c09`): Page background. The console's resting state.
-- **Slate Panel** (`#201916`): Surface background for cards, tables, and the sidebar — one step up from Ink.
-- **Slate Hover** (`#342c28`): Hover/active background for interactive rows and nav links; doubles as the default border color.
-- **Bright Fog** (`#f7f0ed`): Primary text — headings, values, primary labels.
-- **Mid Fog** (`#d4ccc8`): Secondary text — nav labels, secondary copy.
-- **Low Fog** (`#9f9692`): Muted text — stat card labels, timestamps, helper copy.
+- **Near-black** (`#0a0a0a`): Page background.
+- **Panel** (`#171717`): Surface background for cards, tables, and the sidebar — one step up from the page background.
+- **Hover** (`#262626`): Hover/active background for interactive rows and nav links; doubles as the default border color.
+- **Foreground** (`#fafafa`): Primary text — headings, values, primary labels.
+- **Secondary Text** (`#d4d4d4`): Secondary text — nav labels, secondary copy.
+- **Muted Text** (`#a1a1a1`): Muted text — stat card labels, timestamps, helper copy.
 
-### Status (semantic, not decorative)
+### Status (semantic, not decorative — the only color in the system)
 - **Signal Green** (`#10b981`): Success state — matched skills, `DIRECT_APPLY`/`REFERRAL`-leaning signals.
 - **Signal Amber** (`#f59e0b`): Warning state — borderline scores, pending states.
-- **Signal Red** (`#ff5b57`): Error state — failed requests, `SKIP` decisions.
-- **Signal Gray** (`#a79c97`): Neutral/inactive state — default badge tone when nothing else applies.
+- **Signal Red** (`#ff6467`): Error state — failed requests, `SKIP` decisions.
+- **Signal Gray** (`#a1a1a1`): Neutral/inactive state — default badge tone when nothing else applies. (Same value as Muted Text — both are "no particular signal", so sharing the token is intentional, not an oversight.)
 
 ### Named Rules
-**The One Signal Rule.** Burnt Clay is the only warm color on any screen. It marks exactly one thing per view: the primary action or the thing currently in focus (an active score ring, the selected nav item). Status colors (green/amber/red/gray) are reserved for match/decision semantics, never used as decoration.
+**The Color-Is-Function Rule.** No hue exists in this system except the four status tones, and each marks a real job-decision/status meaning — never decoration, never a "brand" color. Primary/nav/focus states are grayscale (light-on-dark inversion), not colored.
 
 ## 3. Typography
 
@@ -166,7 +172,7 @@ A near-black console with one warm accent color and a restrained semantic set fo
 
 ## 4. Elevation
 
-Borders still do most of the work — cards sit on Slate Panel against Near-black Ink with a 1px `border-color` border, and that value shift plus the border remains the primary depth cue at rest. What changed from the earlier flat-only direction: genuinely interactive cards (ones that navigate somewhere on click — a recent-activity row, a job card) may lift subtly on hover, the way Linear/Vercel treat clickable rows. This is a state change that reinforces interactivity, not decoration applied at rest.
+Borders still do most of the work — cards sit on Panel against Near-black with a 1px `border-color` border, and that value shift plus the border remains the primary depth cue at rest. What changed from the earlier flat-only direction: genuinely interactive cards (ones that navigate somewhere on click — a recent-activity row, a job card) may lift subtly on hover, the way Linear/Vercel treat clickable rows. This is a state change that reinforces interactivity, not decoration applied at rest.
 
 ### Shadow Vocabulary
 - **Ambient** (`box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3)`): Default resting shadow on cards. Barely perceptible; reinforces the border, doesn't replace it.
@@ -174,7 +180,7 @@ Borders still do most of the work — cards sit on Slate Panel against Near-blac
 - Transitions on hover/lift: plain `transform`/`box-shadow` fade, ease-out, ~150-200ms. No bounce/elastic easing (matches the general no-gaudy-motion rule).
 
 ### Named Rules
-**The Purposeful Elevation Rule.** Borders + Slate Panel/Ink contrast still define a card at rest. Shadow lift is reserved for hover/active states on surfaces that are actually clickable — it's a state change communicating "this responds to you," never a static decorative flourish on non-interactive containers.
+**The Purposeful Elevation Rule.** Borders + Panel/Ink contrast still define a card at rest. Shadow lift is reserved for hover/active states on surfaces that are actually clickable — it's a state change communicating "this responds to you," never a static decorative flourish on non-interactive containers.
 
 ## 5. Components
 
@@ -182,9 +188,9 @@ Every control should feel considered and responsive: clear, legible state change
 
 ### Buttons
 - **Shape:** 4px radius (`--radius-button`) — barely rounded, deliberately understated.
-- **Primary:** Burnt Clay background (`#d97757`), white text, 600 weight, `8px 16px` padding. One per view, reserved for the primary action (Search Jobs, Generate Resume, Send referral draft).
+- **Primary:** Primary background (`#e5e5e5`), Primary Foreground (dark) text, 600 weight, `8px 16px` padding. One per view, reserved for the primary action (Search Jobs, Generate Resume, Send referral draft).
 - **Secondary:** Transparent background, `border-color` border, primary text color. Used for every non-primary action (View Tracker, cancel, back).
-- **Hover / Focus:** Primary hovers to Burnt Clay Hover (`#c86644`); secondary hovers to Slate Hover (`#342c28`) background. Transition is a plain 0.2s background/border-color fade — no transform, no shadow change.
+- **Hover / Focus:** Primary hovers to Primary Hover (`#d4d4d4`); secondary hovers to Hover (`#262626`) background. Transition is a plain 0.2s background/border-color fade — no transform, no shadow change.
 - **Disabled:** 0.6 opacity, `cursor: not-allowed`. No color shift beyond that.
 
 ### Badges (Chips)
@@ -193,32 +199,32 @@ Every control should feel considered and responsive: clear, legible state change
 
 ### Cards / Containers
 - **Corner Style:** 6px radius (`--radius-card`) — slightly softer than buttons, still understated.
-- **Background:** Slate Panel (`#201916`) on Near-black Ink page background.
+- **Background:** Panel (`#171717`) on Near-black page background.
 - **Shadow Strategy:** Ambient shadow at rest. Cards/rows that navigate somewhere on click get Ambient Elevated + a subtle lift on hover (see Elevation) — non-interactive containers (e.g. a stat card with no click target) stay at Ambient only, since lift on a non-clickable surface would be a false affordance.
-- **Border:** 1px solid `border-color` (`#342c28`) — the primary edge definition at rest; on hover, interactive cards may also shift the border toward Slate Hover or Burnt Clay depending on context.
+- **Border:** 1px solid `border-color` (`#262626`) — the primary edge definition at rest; on hover, interactive cards may also shift the border toward Hover or Primary depending on context.
 - **Internal Padding:** `16px` (`--space-lg`).
 
 ### Inputs / Fields
-- **Style:** Should match the card/button vocabulary — Slate Panel background, `border-color` 1px border, 4px radius, body-size text.
-- **Focus:** Border shifts to Burnt Clay; no glow or shadow bloom — consistent with the Flat-By-Default rule.
+- **Style:** Should match the card/button vocabulary — Panel background, `border-color` 1px border, 4px radius, body-size text.
+- **Focus:** Border shifts to Primary; no glow or shadow bloom — consistent with the Purposeful Elevation Rule.
 - **Error / Disabled:** Error border shifts to Signal Red with helper text in the same red; disabled follows the button disabled treatment (0.6 opacity).
 
 ### Navigation
 
 (Updated 2026-07-05 — the sidebar/bottom-tabs shell described here previously was replaced by a shadcn/ui `Sidebar` + `AppShell` during the Foundation phase of the shadcn redesign; this section now describes what's actually built, under `src/components/layout/`.)
 
-- **Sidebar** (desktop/tablet, shadcn `Sidebar` with `collapsible="icon"`): persistent column, collapsible to an icon rail. Nav items (Dashboard, Job Search, Tracker) use `SidebarMenuButton` — Mid Fog text at rest, Slate Hover background + Bright Fog text when active. No accent color on the sidebar itself; hierarchy stays quiet here, consistent with the One Signal Rule. The "JobFlowAI" wordmark in `SidebarHeader` collapses to a "JF" mark (`group-data-[collapsible=icon]:hidden`/`:inline` pair) rather than clipping when the rail narrows.
+- **Sidebar** (desktop/tablet, shadcn `Sidebar` with `collapsible="icon"`): persistent column, collapsible to an icon rail. Nav items (Dashboard, Job Search, Tracker) use `SidebarMenuButton` — Secondary Text text at rest, Hover background + Foreground text when active. No accent color on the sidebar itself; hierarchy stays quiet here, consistent with the Color-Is-Function Rule. The "JobFlowAI" wordmark in `SidebarHeader` collapses to a "JF" mark (`group-data-[collapsible=icon]:hidden`/`:inline` pair) rather than clipping when the rail narrows.
 - **Mobile** (<768px, shadcn breakpoint): sidebar becomes a `Sheet`-based drawer, triggered from the header's `SidebarTrigger`.
 - **Header:** Sticky single-row bar, `border-bottom` 1px `border-color`. Contains just the sidebar trigger and a route-derived breadcrumb trail. (A ⌘K command palette for jumping to tracked jobs was tried and removed 2026-07-05 — searching from an already-tracked-jobs context didn't earn its place in the header.) No user profile dropdown, no notification bell — no backing auth/notifications API.
 
 ### Score Ring (signature component)
-The SVG score circle is the system's one custom instrument: a ring track in Slate Hover, filled proportionally in Burnt Clay with a rounded stroke cap, numeric score centered in Bright Fog Display-weight text. It should stay the only circular/radial data element in the system so it keeps its authority as the one signature gauge.
+The SVG score circle is the system's one custom instrument: a ring track in Hover, filled proportionally in Primary with a rounded stroke cap, numeric score centered in Foreground Display-weight text. It should stay the only circular/radial data element in the system so it keeps its authority as the one signature gauge.
 
 ## 6. Do's and Don'ts
 
 ### Do:
-- **Do** keep Burnt Clay (`#d97757`) to one purpose per screen — the primary action or the thing currently in focus. Everything else stays neutral.
-- **Do** use borders (`1px solid #342c28`) as the primary depth/separation cue, on Slate Panel (`#201916`) over Near-black Ink (`#120c09`).
+- **Do** keep Primary (`#e5e5e5`) to one purpose per screen — the primary action or the thing currently in focus. Everything else stays neutral.
+- **Do** use borders (`1px solid #262626`) as the primary depth/separation cue, on Panel (`#171717`) over Near-black (`#0a0a0a`).
 - **Do** keep all four status colors (green/amber/red/gray) mapped strictly to match/decision semantics — never decorative.
 - **Do** keep every screen scannable in seconds: stat readouts, tables, and the score ring over narrative copy or long-form explanation.
 - **Do** use the single system-sans stack for everything; differentiate purely by size, weight, and color-muting.
@@ -229,5 +235,5 @@ The SVG score circle is the system's one custom instrument: a ring track in Slat
 - **Don't** add hover lift/shadow to a card or container that has no click target — elevation-on-hover communicates interactivity, so it's a false affordance on something that doesn't respond to a click.
 - **Don't** use `border-left`/`border-right` as a colored accent stripe on cards or list items. If something needs to stand out, use the badge/tint vocabulary or the accent color directly, not a stripe.
 - **Don't** add a second typeface or a monospace variant "for a technical feel" — the One Family Rule holds; hierarchy comes from size/weight/color only.
-- **Don't** use Burnt Clay for more than one element's worth of signal per screen — if two things are both accent-colored, one of them is wrong.
+- **Don't** use Primary for more than one element's worth of signal per screen — if two things are both accent-colored, one of them is wrong.
 - **Don't** invent UI for capabilities the backend doesn't have (auth/profile, notifications, saved/recommended jobs, a resume-score endpoint) — ground every section in real data (see PRODUCT.md's Anti-references).

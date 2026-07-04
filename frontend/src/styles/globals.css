@@ -84,7 +84,7 @@ button {
 
 .btn--primary {
   background: var(--brand);
-  color: #fff;
+  color: var(--brand-foreground);
 }
 
 .btn--primary:hover:not(:disabled) {
@@ -624,7 +624,7 @@ select:disabled {
   --popover: var(--bg-surface);
   --popover-foreground: var(--text-primary);
   --primary: var(--brand);
-  --primary-foreground: #ffffff;
+  --primary-foreground: var(--brand-foreground);
   --secondary: var(--bg-hover);
   --secondary-foreground: var(--text-primary);
   --muted: var(--bg-surface);
@@ -644,7 +644,7 @@ select:disabled {
   --sidebar: var(--bg-surface);
   --sidebar-foreground: var(--text-primary);
   --sidebar-primary: var(--brand);
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary-foreground: var(--brand-foreground);
   --sidebar-accent: var(--bg-hover);
   --sidebar-accent-foreground: var(--text-primary);
   --sidebar-border: var(--border-color);
