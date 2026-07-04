@@ -21,6 +21,17 @@ if (!window.matchMedia) {
   });
 }
 
+// jsdom does not implement ResizeObserver. cmdk's CommandList uses it to
+// track content height, so any test that mounts a Command/CommandDialog
+// needs a stub or it throws "ResizeObserver is not defined".
+if (!window.ResizeObserver) {
+  window.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
 afterEach(() => {
   cleanup();
 });
