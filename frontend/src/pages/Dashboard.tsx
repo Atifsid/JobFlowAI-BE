@@ -3,6 +3,7 @@ import { SearchIcon, SendIcon, XIcon, UserCheckIcon, GaugeIcon } from "lucide-re
 import { useDashboard } from "../hooks/useDashboard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import PageHeader from "@/components/shared/PageHeader";
 import StatCard from "@/components/features/dashboard/StatCard";
 import RecentJobsList from "@/components/features/dashboard/RecentJobsList";
 
@@ -19,15 +20,17 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" render={<Link to="/jobs" />}>
-            View Tracker
-          </Button>
-          <Button render={<Link to="/search" />}>Search Jobs</Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        actions={
+          <>
+            <Button variant="outline" render={<Link to="/jobs" />}>
+              View Tracker
+            </Button>
+            <Button render={<Link to="/search" />}>Search Jobs</Button>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {loading ? (

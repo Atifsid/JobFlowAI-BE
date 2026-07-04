@@ -1,5 +1,5 @@
 import Badge from "../common/Badge";
-import ScoreCircle from "../common/ScoreCircle";
+import ScoreCircle from "../shared/ScoreCircle";
 import SkillBadges from "./SkillBadges";
 import JobStatusSelect from "./JobStatusSelect";
 import JobActionList from "./JobActionList";
