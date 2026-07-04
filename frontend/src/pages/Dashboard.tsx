@@ -1,87 +1,60 @@
 import { Link } from "react-router-dom";
+import { SearchIcon, SendIcon, XIcon, UserCheckIcon, GaugeIcon } from "lucide-react";
 import { useDashboard } from "../hooks/useDashboard";
-import StatCard from "../components/common/StatCard";
-import JobCard from "../components/features/JobCard";
-import Skeleton from "../components/common/Skeleton";
-import Button from "../components/common/Button";
-import Card from "../components/common/Card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import StatCard from "@/components/features/dashboard/StatCard";
+import RecentJobsList from "@/components/features/dashboard/RecentJobsList";
 
 export default function Dashboard() {
   const { dashboard, loading, error } = useDashboard();
 
   if (error) return <p role="alert">{error}</p>;
 
-  const recent = dashboard
-    ? [...dashboard.jobs]
-        .sort((a, b) => (b.job.postedAt ?? "").localeCompare(a.job.postedAt ?? ""))
-        .slice(0, 6)
-    : [];
+  const jobs = dashboard?.jobs ?? [];
+  const averageScore =
+    jobs.length > 0
+      ? Math.round(jobs.reduce((sum, p) => sum + p.score.score, 0) / jobs.length)
+      : null;
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <h1 className="text-display">Dashboard</h1>
-        <div className="page-header__actions">
-          <Link to="/jobs">
-            <Button variant="secondary">View Tracker</Button>
-          </Link>
-          <Link to="/search">
-            <Button>Search Jobs</Button>
-          </Link>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" render={<Link to="/jobs" />}>
+            View Tracker
+          </Button>
+          <Button render={<Link to="/search" />}>Search Jobs</Button>
         </div>
       </div>
 
-      <div className="stats-grid">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {loading ? (
-          <>
-            <Skeleton height="80px" />
-            <Skeleton height="80px" />
-            <Skeleton height="80px" />
-            <Skeleton height="80px" />
-          </>
+          Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)
         ) : (
           <>
-            <StatCard label="Jobs Searched" value={dashboard?.total ?? 0} />
-            <StatCard label="Referral Ready" value={dashboard?.referral ?? 0} tone="success" />
-            <StatCard label="Direct Apply" value={dashboard?.directApply ?? 0} tone="warning" />
-            <StatCard label="Skipped" value={dashboard?.skip ?? 0} tone="neutral" />
+            <StatCard label="Jobs Searched" value={dashboard?.total ?? 0} icon={SearchIcon} />
+            <StatCard label="Referral Ready" value={dashboard?.referral ?? 0} icon={UserCheckIcon} tone="success" />
+            <StatCard label="Direct Apply" value={dashboard?.directApply ?? 0} icon={SendIcon} tone="warning" />
+            <StatCard label="Skipped" value={dashboard?.skip ?? 0} icon={XIcon} />
+            {averageScore !== null && (
+              <StatCard label="Avg. Match Score" value={averageScore} icon={GaugeIcon} />
+            )}
           </>
         )}
       </div>
 
-      <section>
-        <div className="section-header">
-          <h2 className="text-heading">Recent Activity</h2>
-          {!loading && recent.length > 0 && (
-            <Link to="/jobs" className="section-header__link text-small">
+      <section className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-base font-semibold text-foreground">Recent Activity</h2>
+          {!loading && jobs.length > 0 && (
+            <Link to="/jobs" className="text-sm text-muted-foreground hover:text-foreground">
               View all
             </Link>
           )}
         </div>
-
-        {loading ? (
-          <div className="job-grid">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} height="118px" />
-            ))}
-          </div>
-        ) : recent.length === 0 ? (
-          <Card className="empty-state">
-            <p className="text-body">No jobs tracked yet.</p>
-            <p className="text-small">Run a search to start matching jobs against your resume.</p>
-            <Link to="/search">
-              <Button>Search Jobs</Button>
-            </Link>
-          </Card>
-        ) : (
-          <div className="job-grid">
-            {recent.map(pipeline => (
-              <Link key={pipeline.job.id} to={`/jobs/${pipeline.job.id}`} className="job-card-link">
-                <JobCard pipeline={pipeline} />
-              </Link>
-            ))}
-          </div>
-        )}
+        <RecentJobsList jobs={jobs} loading={loading} />
       </section>
     </div>
   );
