@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
-import Layout from "./components/layout/Layout";
+import AppShell from "./components/layout/AppShell";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const JobSearch = lazy(() => import("./pages/JobSearch"));
@@ -14,7 +14,7 @@ export default function App() {
   return (
     <Suspense fallback={<p>Loading...</p>}>
       <Routes>
-        <Route path="/" element={<Layout />}>
+        <Route path="/" element={<AppShell />}>
           <Route index element={<Dashboard />} />
           <Route path="search" element={<JobSearch />} />
           <Route path="jobs" element={<ApplicationTracker />} />
