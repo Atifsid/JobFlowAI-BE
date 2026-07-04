@@ -16,7 +16,7 @@ describe("StatCard", () => {
   });
 
   it("applies a tone-specific class to the value when a tone is given", () => {
-    const { container: defaultContainer } = render(<StatCard label="A" value={1} icon={SearchIcon} />);
+    render(<StatCard label="A" value={1} icon={SearchIcon} />);
     const { container: successContainer } = render(<StatCard label="B" value={2} icon={SearchIcon} tone="success" />);
     const defaultValueClass = screen.getByText("1").className;
     const successValueClass = successContainer.querySelector("p")?.className;
