@@ -25,8 +25,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-a {
-  color: inherit;
+/* In @layer base (not a plain unlayered rule) so shadcn's utility classes
+   (e.g. text-primary-foreground on a Button composed via render={<Link/>})
+   can override it. An unlayered `a { color: inherit }` always wins over ANY
+   layered Tailwind utility regardless of specificity/order — that was
+   silently forcing every Button-as-Link to inherit the page's near-white
+   text color instead of using its intended (dark, on a light primary bg)
+   foreground color, making button text unreadable. */
+@layer base {
+  a {
+    color: inherit;
+  }
 }
 
 button {
