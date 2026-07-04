@@ -1,21 +1,30 @@
 :root {
-  --bg-page: #0f1419;
-  --bg-surface: #1a202c;
-  --bg-hover: #2d3748;
+  /* Neutral scale is warm-tinted toward the brand hue (~45°) instead of the
+     previous cool blue-slate (~250°), which visually clashed with --brand.
+     Values derived in OKLCH (hue 45, tiny chroma 0.012-0.015) then converted
+     to sRGB hex; see contrast notes below for each token. */
+  --bg-page: #120c09;
+  --bg-surface: #201916;
+  --bg-hover: #342c28;
 
   --brand: #d97757;
   --brand-hover: #c86644;
 
   --success: #10b981;
   --warning: #f59e0b;
-  --error: #ef4444;
-  --neutral: #6b7280;
+  /* Lightened from #ef4444 (OKLCH L 0.64->0.70, same hue) so badge text hits
+     4.5:1 against its own 15%-tint background (was ~3.3:1). */
+  --error: #ff5b57;
+  /* Lightened + warm-hued from #6b7280 (cool, hue 264) so the default/neutral
+     status badge — the most common one shown (DISCOVERED/ANALYZED) — clears
+     4.5:1 against its background (was ~2.9:1, essentially unreadable). */
+  --neutral: #a79c97;
 
-  --text-primary: #f3f4f6;
-  --text-secondary: #d1d5db;
-  --text-muted: #9ca3af;
+  --text-primary: #f7f0ed;
+  --text-secondary: #d4ccc8;
+  --text-muted: #9f9692;
 
-  --border-color: #2d3748;
+  --border-color: #342c28;
 
   --radius-card: 6px;
   --radius-button: 4px;

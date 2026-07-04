@@ -614,38 +614,41 @@ select:disabled {
 
 :root,
 .dark {
-  --background: #0f1419;
-  --foreground: #f3f4f6;
-  --card: #1a202c;
-  --card-foreground: #f3f4f6;
-  --popover: #1a202c;
-  --popover-foreground: #f3f4f6;
-  --primary: #d97757;
+  /* References dark-theme.css's tokens (loaded first, in main.tsx) instead
+     of duplicating hex literals — a prior duplication is exactly why the
+     2026-07-05 palette fix required editing two files to change one color. */
+  --background: var(--bg-page);
+  --foreground: var(--text-primary);
+  --card: var(--bg-surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-surface);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--brand);
   --primary-foreground: #ffffff;
-  --secondary: #2d3748;
-  --secondary-foreground: #f3f4f6;
-  --muted: #1a202c;
-  --muted-foreground: #9ca3af;
-  --accent: #2d3748;
-  --accent-foreground: #f3f4f6;
-  --destructive: #ef4444;
-  --border: #2d3748;
-  --input: #2d3748;
-  --ring: #d97757;
-  --chart-1: #d97757;
-  --chart-2: #10b981;
-  --chart-3: #f59e0b;
-  --chart-4: #ef4444;
-  --chart-5: #6b7280;
+  --secondary: var(--bg-hover);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--bg-surface);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--bg-hover);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--error);
+  --border: var(--border-color);
+  --input: var(--border-color);
+  --ring: var(--brand);
+  --chart-1: var(--brand);
+  --chart-2: var(--success);
+  --chart-3: var(--warning);
+  --chart-4: var(--error);
+  --chart-5: var(--neutral);
   --radius: 0.375rem;
-  --sidebar: #1a202c;
-  --sidebar-foreground: #f3f4f6;
-  --sidebar-primary: #d97757;
+  --sidebar: var(--bg-surface);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #2d3748;
-  --sidebar-accent-foreground: #f3f4f6;
-  --sidebar-border: #2d3748;
-  --sidebar-ring: #d97757;
+  --sidebar-accent: var(--bg-hover);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--border-color);
+  --sidebar-ring: var(--brand);
   color-scheme: dark;
 }
 

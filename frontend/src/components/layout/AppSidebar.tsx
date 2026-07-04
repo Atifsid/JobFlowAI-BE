@@ -24,8 +24,9 @@ export default function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <span className="px-2 text-sm font-semibold tracking-tight">
-          JobFlowAI
+        <span className="flex h-8 items-center px-2 text-sm font-semibold tracking-tight text-nowrap overflow-hidden group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          <span className="group-data-[collapsible=icon]:hidden">JobFlowAI</span>
+          <span className="hidden group-data-[collapsible=icon]:inline">JF</span>
         </span>
       </SidebarHeader>
       <SidebarContent>
