@@ -1,3 +1,10 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:is(.dark *));
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -76,12 +83,12 @@ button {
 }
 
 .btn--primary {
-  background: var(--accent);
+  background: var(--brand);
   color: #fff;
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--brand-hover);
 }
 
 .btn--secondary {
@@ -138,7 +145,7 @@ button {
 }
 
 .section-header__link:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
   border-radius: var(--radius-button);
 }
@@ -161,7 +168,7 @@ button {
 }
 
 .job-card-link:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
@@ -177,7 +184,7 @@ button {
 }
 
 .job-card:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
@@ -187,7 +194,7 @@ button {
 }
 
 .job-card--selected {
-  border-color: var(--accent);
+  border-color: var(--brand);
   background: var(--bg-hover);
 }
 
@@ -292,9 +299,9 @@ select:hover:not(:disabled) {
 }
 
 select:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
-  border-color: var(--accent);
+  border-color: var(--brand);
 }
 
 select:disabled {
@@ -319,7 +326,7 @@ select:disabled {
 }
 
 .back-button:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
   border-radius: var(--radius-button);
 }
@@ -358,7 +365,7 @@ select:disabled {
 }
 
 .job-detail__company a:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
   border-radius: var(--radius-button);
 }
@@ -421,7 +428,7 @@ select:disabled {
 }
 
 .job-detail__description summary:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
   border-radius: var(--radius-button);
 }
@@ -559,5 +566,97 @@ select:disabled {
 
 .pagination__page--active {
   color: var(--text-primary);
-  border-color: var(--accent);
+  border-color: var(--brand);
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: 'Geist Variable', sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root,
+.dark {
+  --background: #0f1419;
+  --foreground: #f3f4f6;
+  --card: #1a202c;
+  --card-foreground: #f3f4f6;
+  --popover: #1a202c;
+  --popover-foreground: #f3f4f6;
+  --primary: #d97757;
+  --primary-foreground: #ffffff;
+  --secondary: #2d3748;
+  --secondary-foreground: #f3f4f6;
+  --muted: #1a202c;
+  --muted-foreground: #9ca3af;
+  --accent: #2d3748;
+  --accent-foreground: #f3f4f6;
+  --destructive: #ef4444;
+  --border: #2d3748;
+  --input: #2d3748;
+  --ring: #d97757;
+  --chart-1: #d97757;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #ef4444;
+  --chart-5: #6b7280;
+  --radius: 0.375rem;
+  --sidebar: #1a202c;
+  --sidebar-foreground: #f3f4f6;
+  --sidebar-primary: #d97757;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2d3748;
+  --sidebar-accent-foreground: #f3f4f6;
+  --sidebar-border: #2d3748;
+  --sidebar-ring: #d97757;
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

@@ -114,7 +114,7 @@
   }
 
   .bottom-tabs__link--active {
-    color: var(--accent);
+    color: var(--brand);
   }
 
   .app-content {

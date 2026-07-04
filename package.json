@@ -12,6 +12,7 @@
     "test": "npm run test -w backend && npm run test -w frontend"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "shadcn": "^4.13.0"
   }
 }
