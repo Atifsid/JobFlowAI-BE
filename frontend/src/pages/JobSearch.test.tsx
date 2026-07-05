@@ -3,13 +3,11 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import JobSearch from "./JobSearch";
 import { useJobSearch } from "../hooks/useJobSearch";
-import { useJobStatusUpdate } from "../hooks/useJobStatusUpdate";
 import { resumeService } from "../services/resumeService";
 import { referralService } from "../services/referralService";
 import type { JobPipeline } from "../types";
 
 vi.mock("../hooks/useJobSearch");
-vi.mock("../hooks/useJobStatusUpdate");
 vi.mock("../services/resumeService", () => ({ resumeService: { generate: vi.fn() } }));
 vi.mock("../services/referralService", () => ({ referralService: { generateDrafts: vi.fn() } }));
 
@@ -37,32 +35,40 @@ describe("JobSearch", () => {
       result: { total: 1, referral: 0, directApply: 1, skip: 0, jobs: [pipeline], page: 1, limit: 20, totalMatches: 1 },
       loading: false, error: null, search: vi.fn()
     });
-    vi.mocked(useJobStatusUpdate).mockReturnValue({ updateStatus: vi.fn(), error: null });
-
     render(<MemoryRouter><JobSearch /></MemoryRouter>);
 
     expect(screen.getByText(/1 jobs/)).toBeInTheDocument();
     expect(screen.getByText("Senior Engineer")).toBeInTheDocument();
   });
 
-  it("shows the detail panel for the selected job", () => {
+  it("links each job result to its detail page", () => {
     vi.mocked(useJobSearch).mockReturnValue({
       result: { total: 1, referral: 0, directApply: 1, skip: 0, jobs: [pipeline], page: 1, limit: 20, totalMatches: 1 },
       loading: false, error: null, search: vi.fn()
     });
-    vi.mocked(useJobStatusUpdate).mockReturnValue({ updateStatus: vi.fn(), error: null });
-
     render(<MemoryRouter><JobSearch /></MemoryRouter>);
 
-    fireEvent.click(screen.getByText("Senior Engineer"));
-    expect(screen.getByText("Tailor Resume")).toBeInTheDocument();
+    expect(screen.getByText("Senior Engineer").closest("a")).toHaveAttribute("href", "/jobs/1");
+  });
+
+  it("hides the decision badge for skipped jobs but shows it for others", () => {
+    vi.mocked(useJobSearch).mockReturnValue({
+      result: {
+        total: 2, referral: 0, directApply: 1, skip: 1,
+        jobs: [pipeline, makePipeline("2", "Skipped Job")],
+        page: 1, limit: 20, totalMatches: 2
+      },
+      loading: false, error: null, search: vi.fn()
+    });
+    render(<MemoryRouter><JobSearch /></MemoryRouter>);
+
+    expect(screen.getByText("Direct Apply")).toBeInTheDocument();
+    expect(screen.queryByText("Skip")).not.toBeInTheDocument();
   });
 
   it("submitting the filter form triggers a search with page reset to 1", () => {
     const search = vi.fn();
     vi.mocked(useJobSearch).mockReturnValue({ result: null, loading: false, error: null, search });
-    vi.mocked(useJobStatusUpdate).mockReturnValue({ updateStatus: vi.fn(), error: null });
-
     render(<MemoryRouter><JobSearch /></MemoryRouter>);
 
     fireEvent.change(screen.getByPlaceholderText("e.g. Software Engineer"), { target: { value: "Engineer" } });
@@ -77,8 +83,6 @@ describe("JobSearch", () => {
       result: { total: 1, referral: 0, directApply: 1, skip: 0, jobs: [pipeline], page: 1, limit: 20, totalMatches: 45 },
       loading: false, error: null, search
     });
-    vi.mocked(useJobStatusUpdate).mockReturnValue({ updateStatus: vi.fn(), error: null });
-
     render(<MemoryRouter><JobSearch /></MemoryRouter>);
 
     fireEvent.change(screen.getByPlaceholderText("e.g. Software Engineer"), { target: { value: "Engineer" } });
@@ -101,8 +105,6 @@ describe("JobSearch", () => {
         result: { total: 6, referral: 0, directApply: 0, skip: 6, jobs: sixJobs, page: 1, limit: 20, totalMatches: 6 },
         loading: false, error: null, search: vi.fn()
       });
-      vi.mocked(useJobStatusUpdate).mockReturnValue({ updateStatus: vi.fn(), error: null });
-
       render(<MemoryRouter><JobSearch /></MemoryRouter>);
 
       const checkboxes = screen.getAllByRole("checkbox", { name: /Select .* for pipeline/ });
@@ -120,7 +122,6 @@ describe("JobSearch", () => {
         result: { total: 2, referral: 0, directApply: 0, skip: 2, jobs: sixJobs.slice(0, 2), page: 1, limit: 20, totalMatches: 2 },
         loading: false, error: null, search: vi.fn()
       });
-      vi.mocked(useJobStatusUpdate).mockReturnValue({ updateStatus: vi.fn(), error: null });
       vi.mocked(resumeService.generate).mockResolvedValue({ pdfPath: "a.pdf" });
       vi.mocked(referralService.generateDrafts).mockResolvedValue([]);
 

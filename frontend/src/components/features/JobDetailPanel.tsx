@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import StatusBadge from "@/components/shared/StatusBadge";
@@ -8,9 +9,14 @@ import JobActionList from "./JobActionList";
 import { labelForDecision, toneForDecision, reasoningForDecision } from "../../lib/jobLabels";
 import type { Job, JobPipeline, JobStatus } from "../../types";
 
+type PipelineStatus = "idle" | "pending" | "success" | "error";
+
 interface JobDetailPanelProps {
   pipeline: JobPipeline;
   onStatusChange: (status: JobStatus) => Promise<void> | void;
+  onRunPipeline?: () => Promise<void> | void;
+  pipelineStatus?: PipelineStatus;
+  pipelineMessage?: string | null;
 }
 
 function formatSalary(job: Job): string | null {
@@ -45,7 +51,13 @@ function buildMeta(job: Job): string[] {
   return parts;
 }
 
-export default function JobDetailPanel({ pipeline, onStatusChange }: JobDetailPanelProps) {
+export default function JobDetailPanel({
+  pipeline,
+  onStatusChange,
+  onRunPipeline,
+  pipelineStatus = "idle",
+  pipelineMessage
+}: JobDetailPanelProps) {
   const { job, score, decision, status } = pipeline;
 
   return (
@@ -83,6 +95,19 @@ export default function JobDetailPanel({ pipeline, onStatusChange }: JobDetailPa
         </div>
 
         <SkillBadges score={score} />
+
+        {onRunPipeline && (
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" onClick={onRunPipeline} disabled={pipelineStatus === "pending"}>
+              {pipelineStatus === "pending" ? "Running pipeline…" : "Run Pipeline"}
+            </Button>
+            {pipelineMessage && (
+              <p className={pipelineStatus === "error" ? "text-xs text-destructive" : "text-xs text-muted-foreground"}>
+                {pipelineMessage}
+              </p>
+            )}
+          </div>
+        )}
 
         <JobActionList job={job} actions={pipeline.actions} onSkip={() => onStatusChange("SKIPPED")} />
 

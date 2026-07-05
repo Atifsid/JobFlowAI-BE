@@ -81,4 +81,33 @@ describe("JobDetailPanel", () => {
     fireEvent.change(screen.getByLabelText("Change status"), { target: { value: "APPLIED" } });
     await waitFor(() => expect(onStatusChange).toHaveBeenCalledWith("APPLIED"));
   });
+
+  it("omits the Run Pipeline button when onRunPipeline isn't provided", () => {
+    render(
+      <MemoryRouter>
+        <JobDetailPanel pipeline={pipeline} onStatusChange={vi.fn()} />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByText("Run Pipeline")).not.toBeInTheDocument();
+  });
+
+  it("runs the pipeline and shows the result message when onRunPipeline is provided", () => {
+    const onRunPipeline = vi.fn();
+    render(
+      <MemoryRouter>
+        <JobDetailPanel
+          pipeline={pipeline}
+          onStatusChange={vi.fn()}
+          onRunPipeline={onRunPipeline}
+          pipelineStatus="success"
+          pipelineMessage="Resume generated and referral drafted."
+        />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByText("Run Pipeline"));
+    expect(onRunPipeline).toHaveBeenCalled();
+    expect(screen.getByText("Resume generated and referral drafted.")).toBeInTheDocument();
+  });
 });

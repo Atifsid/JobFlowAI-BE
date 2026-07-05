@@ -1,14 +1,12 @@
+import { Link } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 import InitialsAvatar from "@/components/shared/InitialsAvatar";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { labelForDecision, toneForDecision } from "@/lib/jobLabels";
-import { cn } from "@/lib/utils";
 import type { JobPipeline } from "@/types";
 
 interface JobResultRowProps {
   pipeline: JobPipeline;
-  selected: boolean;
-  onSelect: () => void;
   checked: boolean;
   onCheckedChange: () => void;
   checkDisabled?: boolean;
@@ -17,8 +15,6 @@ interface JobResultRowProps {
 
 export default function JobResultRow({
   pipeline,
-  selected,
-  onSelect,
   checked,
   onCheckedChange,
   checkDisabled,
@@ -27,14 +23,7 @@ export default function JobResultRow({
   const { job, score, decision } = pipeline;
 
   return (
-    <div
-      className={cn(
-        "flex w-full items-center gap-3 rounded-xl bg-card px-4 py-3 ring-1 transition-shadow",
-        selected
-          ? "ring-2 ring-ring"
-          : "ring-foreground/10 hover:shadow-[0_4px_12px_rgba(0,0,0,0.4)] hover:ring-foreground/20"
-      )}
-    >
+    <div className="flex w-full items-center gap-3 rounded-xl bg-card px-4 py-3 ring-1 ring-foreground/10 transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.4)] hover:ring-foreground/20">
       <Checkbox
         checked={checked}
         disabled={checkDisabled}
@@ -44,10 +33,8 @@ export default function JobResultRow({
       {pipelineStatusLabel && (
         <span className="shrink-0 text-xs text-muted-foreground">{pipelineStatusLabel}</span>
       )}
-      <button
-        type="button"
-        onClick={onSelect}
-        aria-pressed={selected}
+      <Link
+        to={`/jobs/${job.id}`}
         className="flex min-w-0 flex-1 items-center gap-3 text-left focus-visible:outline-none"
       >
         <InitialsAvatar name={job.company} />
@@ -62,14 +49,16 @@ export default function JobResultRow({
             </span>
           </p>
         </div>
-        <StatusBadge tone={toneForDecision(decision)}>{labelForDecision(decision)}</StatusBadge>
+        {decision !== "SKIP" && (
+          <StatusBadge tone={toneForDecision(decision)}>{labelForDecision(decision)}</StatusBadge>
+        )}
         <span
           aria-label={`Match score ${score.score} out of 100`}
           className="w-8 shrink-0 text-right text-sm font-semibold tabular-nums text-foreground"
         >
           {score.score}
         </span>
-      </button>
+      </Link>
     </div>
   );
 }

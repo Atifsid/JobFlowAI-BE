@@ -1,14 +1,36 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useJobDetail } from "../hooks/useJobDetail";
+import { resumeService } from "../services/resumeService";
+import { referralService } from "../services/referralService";
 import JobDetailPanel from "../components/features/JobDetailPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+type PipelineStatus = "idle" | "pending" | "success" | "error";
+
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { pipeline, loading, error, updateStatus } = useJobDetail(id);
+  const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus>("idle");
+  const [pipelineMessage, setPipelineMessage] = useState<string | null>(null);
+
+  const runPipeline = async () => {
+    if (!id) return;
+    setPipelineStatus("pending");
+    setPipelineMessage(null);
+    try {
+      await resumeService.generate(id);
+      await referralService.generateDrafts(id);
+      setPipelineStatus("success");
+      setPipelineMessage("Resume generated and referral drafted.");
+    } catch (err) {
+      setPipelineStatus("error");
+      setPipelineMessage(err instanceof Error ? err.message : "Pipeline failed");
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -46,7 +68,13 @@ export default function JobDetail() {
       )}
 
       {!error && !loading && pipeline && (
-        <JobDetailPanel pipeline={pipeline} onStatusChange={updateStatus} />
+        <JobDetailPanel
+          pipeline={pipeline}
+          onStatusChange={updateStatus}
+          onRunPipeline={runPipeline}
+          pipelineStatus={pipelineStatus}
+          pipelineMessage={pipelineMessage}
+        />
       )}
     </div>
   );
