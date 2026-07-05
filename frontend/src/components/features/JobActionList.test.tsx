@@ -24,8 +24,8 @@ describe("JobActionList", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText("Tailor Resume").closest("button")).toHaveClass("btn--primary");
-    expect(screen.getByText("Find Contacts").closest("button")).toHaveClass("btn--secondary");
+    expect(screen.getByText("Tailor Resume").closest("a")).toHaveClass("bg-primary");
+    expect(screen.getByText("Find Contacts").closest("a")).toHaveClass("border-border");
     expect(screen.getByText("Draft Referral")).toBeInTheDocument();
   });
 

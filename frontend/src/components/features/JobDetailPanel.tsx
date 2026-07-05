@@ -1,4 +1,6 @@
-import Badge from "../common/Badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import StatusBadge from "@/components/shared/StatusBadge";
 import ScoreCircle from "../shared/ScoreCircle";
 import SkillBadges from "./SkillBadges";
 import JobStatusSelect from "./JobStatusSelect";
@@ -47,44 +49,50 @@ export default function JobDetailPanel({ pipeline, onStatusChange }: JobDetailPa
   const { job, score, decision, status } = pipeline;
 
   return (
-    <div className="job-detail">
-      <div className="job-detail__header">
-        <div className="job-detail__heading">
-          <h2 className="text-display">{job.title}</h2>
-          <p className="text-body job-detail__company">
-            {job.companyUrl ? (
-              <a href={job.companyUrl} target="_blank" rel="noreferrer">
-                {job.company}
-              </a>
-            ) : (
-              job.company
-            )}
-          </p>
-          <p className="text-small job-detail__meta">{buildMeta(job).join(" · ")}</p>
-        </div>
-
-        <JobStatusSelect status={status} onChange={onStatusChange} />
-      </div>
-
-      <div className="job-detail__score-row">
-        <ScoreCircle score={score.score} size={120} />
-        <div className="job-detail__reasoning">
-          <div className="job-detail__decision-line">
-            <Badge tone={toneForDecision(decision)}>{labelForDecision(decision)}</Badge>
-            <p className="text-small">{reasoningForDecision(decision)}</p>
+    <Card>
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex min-w-0 flex-col gap-1">
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">{job.title}</h2>
+            <p className="text-sm text-muted-foreground">
+              {job.companyUrl ? (
+                <a href={job.companyUrl} target="_blank" rel="noreferrer" className="hover:text-foreground hover:underline">
+                  {job.company}
+                </a>
+              ) : (
+                job.company
+              )}
+            </p>
+            <p className="text-xs text-muted-foreground">{buildMeta(job).join(" · ")}</p>
           </div>
-          <p className="text-body">Recommendation: {score.recommendation}</p>
+
+          <JobStatusSelect status={status} onChange={onStatusChange} />
         </div>
-      </div>
 
-      <SkillBadges score={score} />
+        <Separator />
 
-      <JobActionList job={job} actions={pipeline.actions} onSkip={() => onStatusChange("SKIPPED")} />
+        <div className="flex flex-wrap items-center gap-6">
+          <ScoreCircle score={score.score} size={120} />
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <div className="flex flex-wrap items-baseline gap-2">
+              <StatusBadge tone={toneForDecision(decision)}>{labelForDecision(decision)}</StatusBadge>
+              <p className="text-xs text-muted-foreground">{reasoningForDecision(decision)}</p>
+            </div>
+            <p className="text-sm text-foreground">Recommendation: {score.recommendation}</p>
+          </div>
+        </div>
 
-      <details className="job-detail__description">
-        <summary className="text-small">Job Description</summary>
-        <p className="text-body">{job.description}</p>
-      </details>
-    </div>
+        <SkillBadges score={score} />
+
+        <JobActionList job={job} actions={pipeline.actions} onSkip={() => onStatusChange("SKIPPED")} />
+
+        <details className="border-t border-border pt-4">
+          <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+            Job Description
+          </summary>
+          <p className="mt-3 max-w-[75ch] text-sm text-foreground">{job.description}</p>
+        </details>
+      </CardContent>
+    </Card>
   );
 }

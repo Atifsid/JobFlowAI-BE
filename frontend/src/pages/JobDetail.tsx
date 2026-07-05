@@ -1,7 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useJobDetail } from "../hooks/useJobDetail";
 import JobDetailPanel from "../components/features/JobDetailPanel";
-import Skeleton from "../components/common/Skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>();
@@ -9,36 +11,38 @@ export default function JobDetail() {
   const { pipeline, loading, error, updateStatus } = useJobDetail(id);
 
   return (
-    <div className="page">
-      <button className="back-button" onClick={() => navigate(-1)}>
+    <div className="flex flex-col gap-4">
+      <Button variant="ghost" size="sm" className="self-start" onClick={() => navigate(-1)}>
         ← Back
-      </button>
+      </Button>
 
       {error && <p role="alert">{error}</p>}
 
       {!error && (loading || !pipeline) && (
-        <div className="job-detail" aria-busy="true" aria-label="Loading job">
-          <div className="job-detail__header">
-            <div className="job-detail__heading">
-              <Skeleton width="320px" height="28px" />
-              <Skeleton width="180px" height="16px" />
-              <Skeleton width="240px" height="12px" />
+        <Card aria-busy="true" aria-label="Loading job">
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-7 w-80" />
+                <Skeleton className="h-4 w-44" />
+                <Skeleton className="h-3 w-60" />
+              </div>
+              <Skeleton className="h-8 w-36" />
             </div>
-            <Skeleton width="150px" height="32px" />
-          </div>
-          <div className="job-detail__score-row">
-            <Skeleton width="120px" height="120px" circle />
-            <div className="job-detail__reasoning">
-              <Skeleton width="70%" height="16px" />
-              <Skeleton width="90%" height="16px" />
+            <div className="flex items-center gap-6">
+              <Skeleton className="size-[120px] rounded-full" />
+              <div className="flex flex-1 flex-col gap-2">
+                <Skeleton className="h-4 w-[70%]" />
+                <Skeleton className="h-4 w-[90%]" />
+              </div>
             </div>
-          </div>
-          <Skeleton height="72px" />
-          <div className="job-actions__list">
-            <Skeleton width="140px" height="36px" />
-            <Skeleton width="140px" height="36px" />
-          </div>
-        </div>
+            <Skeleton className="h-16 w-full" />
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-36" />
+              <Skeleton className="h-9 w-36" />
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {!error && !loading && pipeline && (

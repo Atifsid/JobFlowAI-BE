@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Button from "../common/Button";
+import { Button } from "@/components/ui/button";
 import { specForAction } from "../../lib/jobLabels";
 import type { Job, JobAction } from "../../types";
 
@@ -31,28 +31,32 @@ export default function JobActionList({ job, actions, onSkip }: JobActionListPro
   };
 
   return (
-    <div className="job-actions">
-      <div className="job-actions__list">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {specs.length === 0 && (
-          <p className="text-small job-actions__empty">No further action needed for this job.</p>
+          <p className="text-sm text-muted-foreground">No further action needed for this job.</p>
         )}
 
         {specs.map(({ action, spec }, index) => {
-          const variant = index === primaryIndex ? "primary" : "secondary";
+          const variant = index === primaryIndex ? "default" : "outline";
 
           if (spec.kind === "route") {
             return (
-              <Link key={action} to={spec.to!}>
-                <Button variant={variant}>{spec.label}</Button>
-              </Link>
+              <Button key={action} variant={variant} render={<Link to={spec.to!} />}>
+                {spec.label}
+              </Button>
             );
           }
 
           if (spec.kind === "external") {
             return (
-              <a key={action} href={spec.to} target="_blank" rel="noreferrer">
-                <Button variant={variant}>{spec.label}</Button>
-              </a>
+              <Button
+                key={action}
+                variant={variant}
+                render={<a href={spec.to} target="_blank" rel="noreferrer" />}
+              >
+                {spec.label}
+              </Button>
             );
           }
 
@@ -65,20 +69,20 @@ export default function JobActionList({ job, actions, onSkip }: JobActionListPro
           }
 
           return (
-            <Button key={action} variant="secondary" disabled title="Not built yet">
+            <Button key={action} variant="outline" disabled title="Not built yet">
               {spec.label}
             </Button>
           );
         })}
 
         {showOpenListing && (
-          <a href={job.applyUrl} target="_blank" rel="noreferrer">
-            <Button variant="secondary">Open Listing</Button>
-          </a>
+          <Button variant="outline" render={<a href={job.applyUrl} target="_blank" rel="noreferrer" />}>
+            Open Listing
+          </Button>
         )}
       </div>
       {skipError && (
-        <p role="alert" className="text-small job-actions__error">
+        <p role="alert" className="text-xs text-destructive">
           {skipError}
         </p>
       )}

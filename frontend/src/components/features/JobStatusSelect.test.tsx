@@ -4,8 +4,8 @@ import JobStatusSelect from "./JobStatusSelect";
 
 describe("JobStatusSelect", () => {
   it("shows the current status as a badge", () => {
-    const { container } = render(<JobStatusSelect status="REFERRAL_READY" onChange={vi.fn()} />);
-    expect(container.querySelector(".badge")).toHaveTextContent("Referral Ready");
+    render(<JobStatusSelect status="REFERRAL_READY" onChange={vi.fn()} />);
+    expect(screen.getByText("Referral Ready", { selector: "span" })).toBeInTheDocument();
   });
 
   it("calls onChange with the newly selected status", async () => {
