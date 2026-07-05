@@ -25,20 +25,21 @@ class ResumeAIService {
   }
 
   async tailorSkills(skills: string, keywords: string[], feedback?: string) {
-    return this.stripOverflowWarning(
-      await aiService.tailorSkills(skills, keywords, feedback)
-    );
+    return this.clean(await aiService.tailorSkills(skills, keywords, feedback), "Skills");
   }
 
   async tailorExperience(experience: string, keywords: string[], feedback?: string) {
-    return this.stripOverflowWarning(
-      await aiService.tailorExperience(experience, keywords, feedback)
-    );
+    return this.clean(await aiService.tailorExperience(experience, keywords, feedback), "Experience");
   }
 
   async tailorProjects(projects: string, keywords: string[], feedback?: string) {
-    return this.stripOverflowWarning(
-      await aiService.tailorProjects(projects, keywords, feedback)
+    return this.clean(await aiService.tailorProjects(projects, keywords, feedback), "Projects");
+  }
+
+  private clean(raw: string, section: string): string {
+    return this.ensureContent(
+      this.stripSectionLabel(this.stripOverflowWarning(raw), section),
+      section
     );
   }
 
@@ -77,6 +78,26 @@ class ResumeAIService {
 
     logger.warn(text.slice(index).trim());
     return text.slice(0, index).trim();
+  }
+
+  // Models sometimes open with the section's own name as a label
+  // ("Projects:") despite "return only the section text" - rendered,
+  // that duplicates the section heading. Strip it deterministically.
+  private stripSectionLabel(text: string, section: string): string {
+    return text.replace(new RegExp(`^(?:\\*\\*)?${section}(?:\\*\\*)?:?\\s*\\n`, "i"), "").trim();
+  }
+
+  // Observed live: a local model once returned ONLY the overflow marker,
+  // which after stripping would silently render a resume with an empty
+  // section. Fail loudly instead - the pipeline reports the error and a
+  // re-run fixes it.
+  private ensureContent(text: string, section: string): string {
+    if (!text) {
+      throw new Error(
+        `Tailored ${section} section came back empty - the model returned no usable content. Re-run the pipeline for this job.`
+      );
+    }
+    return text;
   }
 }
 

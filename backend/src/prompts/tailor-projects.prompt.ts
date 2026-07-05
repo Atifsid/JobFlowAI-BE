@@ -17,11 +17,14 @@ not just reword.
 
 Rules:
 - Never invent projects or change project names, technologies, or facts
-  about a project that's kept.
-- Select only the 2-3 projects most relevant to the target keywords.
+  about a project that's kept. Copy each kept project's "**Name** —
+  technology, technology" title line EXACTLY as it appears in the
+  master - never add, remove, annotate, or substitute technologies on
+  that line, even if a target keyword seems to fit.
+- Select exactly the 2 projects most relevant to the target keywords.
   Unlike work history, it's fine to drop projects entirely here - this
   isn't an employment record.
-- Keep 1-3 bullets per selected project, reworded to emphasize the
+- Keep 1-2 bullets per selected project, reworded to emphasize the
   target keywords' technologies and outcomes, using the keywords' exact
   wording where truthful.
 - Never touch formatting, styles, fonts, or layout - return plain text only.

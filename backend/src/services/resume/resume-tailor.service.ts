@@ -7,7 +7,10 @@ import resumeAIService from "./ai/resume-ai.service";
 import atsCheckService from "./ats/ats-check.service";
 import logger from "../../config/logger";
 
-const MAX_ATTEMPTS = 2;
+// Three tries at the gate; with best-attempt selection below, extra
+// attempts can only improve the saved resume, never worsen it. ~35s per
+// attempt on the local model.
+const MAX_ATTEMPTS = 3;
 
 class ResumeTailorService {
   async generate(job: Job) {
@@ -22,14 +25,14 @@ class ResumeTailorService {
     // the finished resume against.
     const keywords = await resumeAIService.extractKeywords(job.description);
 
-    let pdf: Buffer = Buffer.alloc(0);
-    let ats: AtsReport | undefined;
+    let best: { pdf: Buffer; ats: AtsReport } | undefined;
     let feedback: string | undefined;
 
     // Tailor -> render -> gate. On a failed gate, one retry with the
-    // concrete failures fed back into the prompts; after that the resume
-    // is saved anyway with the report attached, so the user sees exactly
-    // what's still short rather than getting nothing.
+    // concrete failures fed back into the prompts. The BEST attempt is
+    // what gets saved, not the last one - observed live: a retry that
+    // chased missing keywords ballooned a one-page 63%-coverage draft
+    // into a two-page 94% one, and the one-pager was the better resume.
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       const newSkills = await resumeAIService.tailorSkills(skills, keywords, feedback);
       const newExperience = await resumeAIService.tailorExperience(experience, keywords, feedback);
@@ -39,15 +42,19 @@ class ResumeTailorService {
       tailored = markdownService.replace(tailored, "Experience", newExperience);
       tailored = markdownService.replace(tailored, "Projects", newProjects);
 
-      pdf = await pdfRenderService.render(tailored);
+      const pdf = await pdfRenderService.render(tailored);
 
-      ats = atsCheckService.evaluate({
+      const ats = atsCheckService.evaluate({
         markdown: tailored,
         pdf,
         keywords,
         masterExperience: experience,
         tailoredExperience: newExperience
       });
+
+      if (!best || this.isBetter(ats, best.ats)) {
+        best = { pdf, ats };
+      }
 
       if (ats.passed) break;
 
@@ -57,9 +64,27 @@ class ResumeTailorService {
       );
     }
 
+    const { pdf, ats } = best as { pdf: Buffer; ats: AtsReport };
     const pdfPath = await resumeService.save(job.company, job.title, pdf);
 
-    return { pdfPath, keywords, ats: ats as AtsReport };
+    return { pdfPath, keywords, ats };
+  }
+
+  // Hard constraints first (one page, no dropped employers), keyword
+  // coverage only as the tiebreaker: a one-page 63% resume beats a
+  // two-page 94% one.
+  private isBetter(candidate: AtsReport, current: AtsReport): boolean {
+    if (candidate.passed !== current.passed) return candidate.passed;
+
+    const candidateFits = candidate.pages <= 1;
+    if (candidateFits !== (current.pages <= 1)) return candidateFits;
+
+    const candidateKeepsEmployers = candidate.missingEmployers.length === 0;
+    if (candidateKeepsEmployers !== (current.missingEmployers.length === 0)) {
+      return candidateKeepsEmployers;
+    }
+
+    return candidate.score > current.score;
   }
 
   private buildFeedback(ats: AtsReport): string {
@@ -77,9 +102,15 @@ class ResumeTailorService {
     }
     if (ats.missingEmployers.length > 0) {
       issues.push(
-        `these employers were dropped from the work history: ${ats.missingEmployers.join(", ")} - every employer must be kept`
+        `these roles were dropped from the work history: ${ats.missingEmployers.join("; ")} - every role must be kept with its exact title and company`
       );
     }
+
+    // Always restate the standing constraints: a retry that only chases
+    // missing keywords will happily blow past the page limit otherwise.
+    issues.push(
+      "while fixing this, stay within every original limit: the section bullet/line budgets and the one-page total are hard constraints"
+    );
 
     return issues.join("; ");
   }

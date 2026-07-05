@@ -76,17 +76,28 @@ class AtsCheckService {
     return counts.length ? Math.max(...counts) : 0;
   }
 
-  // The tailoring prompt requires every employer to be kept (no gaps in
-  // the work-history timeline), but smaller local models don't always
+  // The tailoring prompt requires every role to be kept (no gaps in the
+  // work-history timeline), but smaller local models don't always
   // comply - observed live with a 7B model silently dropping a role.
-  // Employer names are parsed from the master's "**Title** | Company |
-  // Dates" lines.
+  // Checking company names alone isn't enough: with two roles at the
+  // same company, one can vanish while the company name still appears
+  // (also observed live). So each "**Title** | Company | Dates" pair
+  // from the master must survive as a pair.
   findMissingEmployers(masterExperience: string, tailoredExperience: string): string[] {
-    const employers = [
-      ...masterExperience.matchAll(/\*\*.+?\*\*\s*\|\s*(.+?)\s*\|/g)
-    ].map(match => match[1].trim());
+    const roles = [
+      ...masterExperience.matchAll(/\*\*(.+?)\*\*\s*\|\s*(.+?)\s*\|/g)
+    ].map(match => ({ title: match[1].trim(), company: match[2].trim() }));
 
-    return employers.filter(employer => !tailoredExperience.includes(employer));
+    const tailoredLines = tailoredExperience.split("\n");
+
+    return roles
+      .filter(
+        role =>
+          !tailoredLines.some(
+            line => line.includes(role.title) && line.includes(role.company)
+          )
+      )
+      .map(role => `${role.title} | ${role.company}`);
   }
 }
 

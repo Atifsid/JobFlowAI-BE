@@ -4,7 +4,12 @@ export const buildTailorExperiencePrompt = (
   experience: string,
   keywords: string[],
   feedback?: string
-): AIMessage[] => [
+): AIMessage[] => {
+  // Small local models follow a concrete count far more reliably than
+  // "keep every role" - anchor the rule to the actual number.
+  const roleCount = (experience.match(/^\*\*.+?\|/gm) ?? []).length;
+
+  return [
   {
     role: "system",
     content: `You are an expert resume writer helping tailor the Experience
@@ -17,13 +22,16 @@ SELECT and condense, not just reword.
 
 Rules:
 - Never invent experience, employers, titles, or dates.
-- Keep EVERY employer/role listed in the input - never omit a company or
-  create a gap in the timeline. Only select and trim bullets within each
-  role.
-- Per role, keep only the 2-4 bullets most relevant to the target
-  keywords - the most recent/relevant role can keep more, older or less
-  relevant roles should keep fewer. Aim for roughly 10-14 bullets total
-  across all roles combined.
+- The input contains exactly ${roleCount} roles. Your output must contain
+  exactly ${roleCount} role header lines with the same titles, companies,
+  and dates, in the same order - never omit a role or merge two roles,
+  even two roles at the same company. Only select and trim bullets
+  within each role.
+- Per role, keep only the 2-3 bullets most relevant to the target
+  keywords - the most recent/relevant role can keep 3, older or less
+  relevant roles should keep 2. Hard limit: no more than 12 bullets
+  total across all roles combined - beyond that the resume will not fit
+  one page.
 - Reword the bullets you keep to emphasize achievements involving the
   target keywords, using the keywords' exact wording where truthful, to
   help pass ATS screening.
@@ -40,4 +48,5 @@ Rules:
         : ""
     }`
   }
-];
+  ];
+};

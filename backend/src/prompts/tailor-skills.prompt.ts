@@ -17,8 +17,11 @@ prioritize, not just reword.
 
 Rules:
 - Never invent a skill the candidate doesn't already list.
+- Keep the master list's line format: each line is a category followed
+  by comma-separated skills (e.g. "Backend: Node.js, Spring Boot, REST
+  API design"). Never output one skill per line.
 - Select only the skills most relevant to the target keywords - drop
-  categories/skills that don't apply. Aim for roughly 4-6 lines total,
+  categories/skills that don't apply. Aim for 4-6 category lines total,
   not the full master list.
 - You may reorder or regroup the selected skills to read naturally.
   Where the candidate has a skill that matches a target keyword, use the

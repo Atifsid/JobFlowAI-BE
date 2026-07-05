@@ -107,7 +107,28 @@ describe("AtsCheckService.evaluate", () => {
       tailoredExperience: "**Senior Engineer** | Acme Corp | Jan 2024 – Present\n- Did stuff."
     });
 
-    expect(report.missingEmployers).toEqual(["Beta Inc"]);
+    expect(report.missingEmployers).toEqual(["Engineer | Beta Inc"]);
+    expect(report.passed).toBe(false);
+  });
+
+  it("catches a dropped role even when another role at the same company survives", () => {
+    // Observed live: with two roles at one company, the model dropped one
+    // and a company-name-only check couldn't see it.
+    const twoRolesSameCompany = `**Senior Engineer** | Acme Corp | Jan 2024 – Present
+- Did stuff.
+
+**Junior Engineer** | Acme Corp | Jan 2020 – Jan 2024
+- Did earlier stuff.`;
+
+    const report = atsCheckService.evaluate({
+      ...baseInput,
+      markdown: "React",
+      keywords: ["React"],
+      masterExperience: twoRolesSameCompany,
+      tailoredExperience: "**Senior Engineer** | Acme Corp | Jan 2024 – Present\n- Did stuff."
+    });
+
+    expect(report.missingEmployers).toEqual(["Junior Engineer | Acme Corp"]);
     expect(report.passed).toBe(false);
   });
 

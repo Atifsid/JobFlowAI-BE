@@ -145,14 +145,42 @@ describe("ResumeTailorService.generate", () => {
     expect(result.ats).toEqual(passingReport);
   });
 
-  it("saves the resume anyway after the retry still fails, with the failing report attached", async () => {
+  it("saves the resume anyway after all retries still fail, with the failing report attached", async () => {
     const failingReport = { ...passingReport, score: 40, missingKeywords: ["AWS"], passed: false };
     mockEvaluate.mockReturnValue(failingReport);
 
     const result = await resumeTailorService.generate(job);
 
-    expect(mockTailorSkills).toHaveBeenCalledTimes(2);
+    expect(mockTailorSkills).toHaveBeenCalledTimes(3);
     expect(mockSave).toHaveBeenCalled();
     expect(result.ats).toEqual(failingReport);
+  });
+
+  it("always restates the standing one-page/budget constraints in retry feedback", async () => {
+    const keywordOnlyFailure = { ...passingReport, score: 60, missingKeywords: ["AWS"], passed: false };
+    mockEvaluate.mockReturnValueOnce(keywordOnlyFailure).mockReturnValueOnce(passingReport);
+
+    await resumeTailorService.generate(job);
+
+    const feedback = mockTailorSkills.mock.calls[1][2];
+    expect(feedback).toContain("one-page total");
+  });
+
+  it("keeps the best attempt when all fail: a one-page draft beats two-page ones with higher coverage", async () => {
+    const onePageLowCoverage = { ...passingReport, score: 63, missingKeywords: ["AWS"], pages: 1, passed: false };
+    const twoPageHighCoverage = { ...passingReport, score: 94, missingKeywords: [], pages: 2, passed: false };
+    mockEvaluate
+      .mockReturnValueOnce(onePageLowCoverage)
+      .mockReturnValueOnce(twoPageHighCoverage)
+      .mockReturnValueOnce(twoPageHighCoverage);
+    mockRender
+      .mockResolvedValueOnce(Buffer.from("attempt-1-pdf"))
+      .mockResolvedValueOnce(Buffer.from("attempt-2-pdf"))
+      .mockResolvedValueOnce(Buffer.from("attempt-3-pdf"));
+
+    const result = await resumeTailorService.generate(job);
+
+    expect(mockSave).toHaveBeenCalledWith("Acme", "Software Engineer", Buffer.from("attempt-1-pdf"));
+    expect(result.ats).toEqual(onePageLowCoverage);
   });
 });

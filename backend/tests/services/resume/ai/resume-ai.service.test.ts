@@ -140,4 +140,22 @@ describe("ResumeAIService", () => {
 
     expect(mockTailorSkills).toHaveBeenCalledWith("React", ["React"], "missing: AWS");
   });
+
+  it("strips a leading section-name label the model echoes back", async () => {
+    mockTailorProjects.mockResolvedValue("Projects:\n**HRMS** — React Native\n- Built stuff.");
+
+    const result = await resumeAIService.tailorProjects("JobFlowAI", ["React"]);
+
+    expect(result).toBe("**HRMS** — React Native\n- Built stuff.");
+  });
+
+  it("throws when a section comes back empty after stripping the overflow marker", async () => {
+    // Observed live: the model returned ONLY "OVERFLOW WARNING:" - left
+    // unchecked this renders a resume with a silently missing section.
+    mockTailorProjects.mockResolvedValue("OVERFLOW WARNING: too long");
+
+    await expect(resumeAIService.tailorProjects("JobFlowAI", ["React"])).rejects.toThrow(
+      "Tailored Projects section came back empty"
+    );
+  });
 });
