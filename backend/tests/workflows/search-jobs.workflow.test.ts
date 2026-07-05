@@ -79,4 +79,41 @@ describe("SearchJobsWorkflow.run", () => {
       { page: 1, limit: 20, totalMatches: 0 }
     );
   });
+
+  it("filters out jobs whose extracted years-of-experience falls outside minYears/maxYears", async () => {
+    const junior = { id: "1", description: "Looking for 0-1 years of experience" };
+    const midLevel = { id: "2", description: "3+ years of professional experience required" };
+    const senior = { id: "3", description: "Minimum of 8 years of experience" };
+    const unstated = { id: "4", description: "Join our growing team!" };
+    mockJobspediaSearch.mockResolvedValue({
+      jobs: [junior, midLevel, senior, unstated],
+      total: 4
+    });
+    mockGreenhouseSearch.mockResolvedValue({ jobs: [], total: 0 });
+
+    const { default: workflow } = await import("../../src/workflows/search-jobs.workflow");
+    await workflow.run({ minYears: 2, maxYears: 4 });
+
+    expect(mockBuild).toHaveBeenCalledWith(
+      [
+        { job: midLevel, status: JobStatus.DISCOVERED },
+        { job: unstated, status: JobStatus.DISCOVERED }
+      ],
+      { page: 1, limit: 20, totalMatches: 2 }
+    );
+  });
+
+  it("does not filter by years when minYears/maxYears aren't provided", async () => {
+    const job = { id: "1", description: "Minimum of 8 years of experience" };
+    mockJobspediaSearch.mockResolvedValue({ jobs: [job], total: 1 });
+    mockGreenhouseSearch.mockResolvedValue({ jobs: [], total: 0 });
+
+    const { default: workflow } = await import("../../src/workflows/search-jobs.workflow");
+    await workflow.run({});
+
+    expect(mockBuild).toHaveBeenCalledWith(
+      [{ job, status: JobStatus.DISCOVERED }],
+      { page: 1, limit: 20, totalMatches: 1 }
+    );
+  });
 });

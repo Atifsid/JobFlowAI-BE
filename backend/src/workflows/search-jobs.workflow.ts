@@ -5,6 +5,7 @@ import { JobStatus } from "../models/job-status.model";
 import { JobProvider } from "../services/jobs/job-provider.types";
 import jobspediaProvider from "../services/jobs/providers/jobspedia/jobspedia.service";
 import greenhouseProvider from "../services/jobs/providers/greenhouse/greenhouse.service";
+import experienceRequirementService from "../services/jobs/experience-requirement.service";
 import dashboardService from "../services/dashboard/dashboard.service";
 import { Workflow } from "../types/workflow";
 import cache from "../services/jobs/job-cache.service";
@@ -24,8 +25,28 @@ class SearchJobsWorkflow implements Workflow<JobSearch, Dashboard> {
       const results = await Promise.all(
         providers.map(provider => provider.search(search))
       );
-      const jobs = results.flatMap(r => r.jobs);
-      const totalMatches = results.reduce((sum, r) => sum + r.total, 0);
+      let jobs = results.flatMap(r => r.jobs);
+      let totalMatches = results.reduce((sum, r) => sum + r.total, 0);
+
+      // Years-of-experience filtering happens here, not in any provider:
+      // it's derived from the JD body text (experience-requirement.service.ts),
+      // a more reliable signal than jobspedia's title-only seniority bucket,
+      // which defaults every unlabeled title to "mid" regardless of the
+      // years actually required. Applied after provider-side pagination, so
+      // totalMatches becomes this page's filtered count rather than a true
+      // cross-page total - an accepted simplification for a single-user,
+      // local-first tool; a provider-side filter would need jobspedia to
+      // index the same extraction itself.
+      if (search.minYears !== undefined || search.maxYears !== undefined) {
+        jobs = jobs.filter(job => {
+          const requirement = experienceRequirementService.extract(job.description);
+          return experienceRequirementService.matches(requirement, {
+            minYears: search.minYears,
+            maxYears: search.maxYears
+          });
+        });
+        totalMatches = jobs.length;
+      }
 
       const pipeline: JobPipeline[] = [];
 

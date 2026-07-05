@@ -130,6 +130,30 @@ export default function JobFilters({ filters, onChange, onSubmit, loading }: Job
           </fieldset>
 
           <fieldset className="flex flex-col gap-1.5">
+            <legend className="mb-1.5 text-sm font-medium text-foreground">Years of experience (min / max)</legend>
+            <p className="mb-1 text-xs text-muted-foreground">
+              More precise than Seniority above — matches years actually stated in the job description,
+              rather than a title-based guess.
+            </p>
+            <Input
+              type="number"
+              min={0}
+              aria-label="Minimum years of experience"
+              value={filters.minYears ?? ""}
+              onChange={e => set("minYears", e.target.value ? Number(e.target.value) : undefined)}
+              placeholder="Min"
+            />
+            <Input
+              type="number"
+              min={0}
+              aria-label="Maximum years of experience"
+              value={filters.maxYears ?? ""}
+              onChange={e => set("maxYears", e.target.value ? Number(e.target.value) : undefined)}
+              placeholder="Max"
+            />
+          </fieldset>
+
+          <fieldset className="flex flex-col gap-1.5">
             <legend className="mb-1.5 text-sm font-medium text-foreground">Salary (min / max)</legend>
             <Input
               type="number"

@@ -77,6 +77,8 @@ export interface JobSearchParams {
   city?: string;
   region?: string;
   seniority?: string[];
+  minYears?: number;
+  maxYears?: number;
   minSalary?: number;
   maxSalary?: number;
   daysAgo?: number;
