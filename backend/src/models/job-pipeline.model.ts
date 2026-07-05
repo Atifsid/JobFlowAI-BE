@@ -15,4 +15,7 @@ export interface JobPipeline {
   keywords?: string[];
   // Result of the deterministic ATS check of the last generated resume.
   ats?: AtsReport;
+  // Shareable Google Drive link of the last uploaded resume - what the
+  // referral drafts point recipients at.
+  driveLink?: string;
 }

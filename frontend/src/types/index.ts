@@ -38,6 +38,7 @@ export interface JobPipeline {
   status: JobStatus;
   keywords?: string[];
   ats?: AtsReport;
+  driveLink?: string;
 }
 
 export interface Dashboard {

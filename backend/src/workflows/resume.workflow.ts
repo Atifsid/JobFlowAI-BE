@@ -21,13 +21,14 @@ class ResumeWorkflow {
       driveLink = await driveService.upload(pdfPath, fileName);
     }
 
-    // Persist the extracted keywords + ATS report on the cached pipeline
-    // (the UI reads them from there), then advance the status - before
-    // the Sheets upsert below so the row reflects the new state.
-    // Forward-only: a re-run on a further-along job is a no-op.
+    // Persist the extracted keywords + ATS report + Drive link on the
+    // cached pipeline (the UI and the referral drafts read them from
+    // there), then advance the status - before the Sheets upsert below
+    // so the row reflects the new state. Forward-only: a re-run on a
+    // further-along job is a no-op.
     const cached = await cache.getPipeline(jobId);
     if (cached) {
-      await cache.save({ ...cached, keywords, ats });
+      await cache.save({ ...cached, keywords, ats, ...(driveLink ? { driveLink } : {}) });
     }
     await cache.advanceStatus(jobId, JobStatus.RESUME_GENERATED);
 

@@ -52,7 +52,8 @@ class JobCacheService {
       job: raw.job,
       status,
       ...(raw.keywords ? { keywords: raw.keywords } : {}),
-      ...(raw.ats ? { ats: raw.ats } : {})
+      ...(raw.ats ? { ats: raw.ats } : {}),
+      ...(raw.driveLink ? { driveLink: raw.driveLink } : {})
     };
   }
 }

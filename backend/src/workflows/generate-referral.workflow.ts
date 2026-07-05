@@ -5,21 +5,22 @@ import { JobStatus } from "../models/job-status.model";
 
 class GenerateReferralWorkflow {
   async run(jobId: string) {
-    const job = await cache.get(jobId);
+    const pipeline = await cache.getPipeline(jobId);
 
-    if (!job)
+    if (!pipeline)
       throw new Error("Job not found");
+
+    const { job, driveLink } = pipeline;
 
     const employees = await employeeService.find(job.company);
 
+    // driveLink is set by resume.workflow when Drive upload is enabled;
+    // without it the drafts simply don't reference a resume link (the
+    // prompt is told not to invent one).
     const messages = await Promise.all(
       employees.map(async employee => ({
         employee,
-        message: await referralService.generate(
-          job,
-          employee,
-          "<Resume Link>"
-        )
+        message: await referralService.generate(job, employee, driveLink)
       }))
     );
 
