@@ -5,7 +5,7 @@ import { dashboardService } from "@/services/dashboardService";
 import AppShell from "./AppShell";
 
 vi.mock("@/services/dashboardService", () => ({
-  dashboardService: { getDashboard: vi.fn().mockResolvedValue({ total: 0, referral: 0, directApply: 0, skip: 0, jobs: [] }) },
+  dashboardService: { getDashboard: vi.fn().mockResolvedValue({ total: 0, resumesGenerated: 0, referralsReady: 0, applied: 0, jobs: [] }) },
 }));
 
 describe("AppShell", () => {

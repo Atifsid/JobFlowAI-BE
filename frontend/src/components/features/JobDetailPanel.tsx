@@ -1,12 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import StatusBadge from "@/components/shared/StatusBadge";
-import ScoreCircle from "../shared/ScoreCircle";
-import SkillBadges from "./SkillBadges";
 import JobStatusSelect from "./JobStatusSelect";
 import JobActionList from "./JobActionList";
-import { labelForDecision, toneForDecision, reasoningForDecision } from "../../lib/jobLabels";
 import type { Job, JobPipeline, JobStatus } from "../../types";
 
 type PipelineStatus = "idle" | "pending" | "success" | "error";
@@ -58,7 +54,7 @@ export default function JobDetailPanel({
   pipelineStatus = "idle",
   pipelineMessage
 }: JobDetailPanelProps) {
-  const { job, score, decision, status } = pipeline;
+  const { job, status } = pipeline;
 
   return (
     <Card>
@@ -83,19 +79,6 @@ export default function JobDetailPanel({
 
         <Separator />
 
-        <div className="flex flex-wrap items-center gap-6">
-          <ScoreCircle score={score.score} size={120} />
-          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-            <div className="flex flex-wrap items-baseline gap-2">
-              <StatusBadge tone={toneForDecision(decision)}>{labelForDecision(decision)}</StatusBadge>
-              <p className="text-xs text-muted-foreground">{reasoningForDecision(decision)}</p>
-            </div>
-            <p className="text-sm text-foreground">Recommendation: {score.recommendation}</p>
-          </div>
-        </div>
-
-        <SkillBadges score={score} />
-
         {onRunPipeline && (
           <div className="flex flex-wrap items-center gap-3">
             <Button variant="outline" onClick={onRunPipeline} disabled={pipelineStatus === "pending"}>
@@ -109,7 +92,7 @@ export default function JobDetailPanel({
           </div>
         )}
 
-        <JobActionList job={job} actions={pipeline.actions} onSkip={() => onStatusChange("SKIPPED")} />
+        <JobActionList job={job} onSkip={() => onStatusChange("SKIPPED")} />
 
         <details className="border-t border-border pt-4">
           <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">

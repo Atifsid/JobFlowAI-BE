@@ -44,7 +44,7 @@ describe("AppBreadcrumbs", () => {
 
   it("shows Tracker > job title on /jobs/:id, using real dashboard data", async () => {
     vi.mocked(dashboardService.getDashboard).mockResolvedValue({
-      total: 1, referral: 0, directApply: 1, skip: 0,
+      total: 1, resumesGenerated: 0, referralsReady: 1, applied: 0,
       jobs: [{ job: { id: "job-1", title: "Senior Engineer", company: "Acme" }, status: "DISCOVERED" } as never],
     });
 
@@ -56,7 +56,7 @@ describe("AppBreadcrumbs", () => {
 
   it("shows Tracker > job title > subpage label on /jobs/:id/resume", async () => {
     vi.mocked(dashboardService.getDashboard).mockResolvedValue({
-      total: 1, referral: 0, directApply: 1, skip: 0,
+      total: 1, resumesGenerated: 0, referralsReady: 1, applied: 0,
       jobs: [{ job: { id: "job-1", title: "Senior Engineer", company: "Acme" }, status: "DISCOVERED" } as never],
     });
 

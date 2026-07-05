@@ -15,7 +15,7 @@ const jobs = [
 
 describe("ApplicationTracker", () => {
   it("renders a row per job and filters by status tab", () => {
-    vi.mocked(useTracker).mockReturnValue({ dashboard: { total: 2, referral: 1, directApply: 1, skip: 0, jobs }, loading: false, error: null, updateStatus: vi.fn(), reload: vi.fn() });
+    vi.mocked(useTracker).mockReturnValue({ dashboard: { total: 2, resumesGenerated: 1, referralsReady: 1, applied: 0, jobs }, loading: false, error: null, updateStatus: vi.fn(), reload: vi.fn() });
 
     render(<MemoryRouter><ApplicationTracker /></MemoryRouter>);
 
@@ -28,7 +28,7 @@ describe("ApplicationTracker", () => {
 
   it("shows bulk action buttons when a job is selected", () => {
     const updateStatus = vi.fn();
-    vi.mocked(useTracker).mockReturnValue({ dashboard: { total: 2, referral: 1, directApply: 1, skip: 0, jobs }, loading: false, error: null, updateStatus, reload: vi.fn() });
+    vi.mocked(useTracker).mockReturnValue({ dashboard: { total: 2, resumesGenerated: 1, referralsReady: 1, applied: 0, jobs }, loading: false, error: null, updateStatus, reload: vi.fn() });
 
     render(<MemoryRouter><ApplicationTracker /></MemoryRouter>);
 

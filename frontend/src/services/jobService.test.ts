@@ -9,7 +9,7 @@ describe("jobService", () => {
   it("search() posts to /api/jobs/search with the given params", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ success: true, message: "ok", data: { total: 0, referral: 0, directApply: 0, skip: 0, jobs: [] } })
+      json: () => Promise.resolve({ success: true, message: "ok", data: { total: 0, resumesGenerated: 0, referralsReady: 0, applied: 0, jobs: [] } })
     });
     vi.stubGlobal("fetch", fetchMock);
 

@@ -93,11 +93,7 @@ export default function JobSearch() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Job Search"
-        description={
-          result
-            ? `${result.total} jobs · Referral ${result.referral} · Apply ${result.directApply} · Skip ${result.skip}`
-            : undefined
-        }
+        description={result ? `${result.total} jobs found` : undefined}
       />
 
       {error && <p role="alert">{error}</p>}

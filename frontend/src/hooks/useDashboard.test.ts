@@ -13,7 +13,7 @@ describe("useDashboard", () => {
   });
 
   it("loads the dashboard on mount", async () => {
-    vi.mocked(dashboardService.getDashboard).mockResolvedValue({ total: 3, referral: 1, directApply: 1, skip: 1, jobs: [] });
+    vi.mocked(dashboardService.getDashboard).mockResolvedValue({ total: 3, resumesGenerated: 1, referralsReady: 1, applied: 1, jobs: [] });
 
     const { result } = renderHook(() => useDashboard());
 

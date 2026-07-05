@@ -12,8 +12,7 @@ vi.mock("../services/referralService", () => ({ referralService: { generateDraft
 
 const pipeline = {
   job: { id: "1", title: "Senior Engineer", company: "Acme", location: "NYC", remote: false, description: "desc", skills: [], applyUrl: "https://x.com", source: "test" },
-  score: { score: 68, missingSkills: [], strengths: [], weaknesses: [], recommendation: "Apply" },
-  decision: "DIRECT_APPLY" as const, actions: [], status: "ANALYZED" as const
+  status: "DISCOVERED" as const
 };
 
 describe("JobDetail", () => {

@@ -10,9 +10,6 @@ function makePipeline(id: string, postedAt: string): JobPipeline {
       id, title: `Job ${id}`, company: "Acme", location: "NYC", remote: false,
       description: "", skills: [], applyUrl: "https://x.com", source: "test", postedAt
     },
-    score: { score: 50, missingSkills: [], strengths: [], weaknesses: [], recommendation: "" },
-    decision: "SKIP",
-    actions: [],
     status: "DISCOVERED"
   };
 }

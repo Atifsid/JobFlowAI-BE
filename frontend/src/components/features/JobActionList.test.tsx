@@ -17,64 +17,26 @@ const job: Job = {
 };
 
 describe("JobActionList", () => {
-  it("renders backend-computed actions with the first as primary", () => {
+  it("always renders the full action set with Tailor Resume as primary", () => {
     render(
       <MemoryRouter>
-        <JobActionList job={job} actions={["GENERATE_RESUME", "FIND_EMPLOYEES", "GENERATE_REFERRAL"]} onSkip={vi.fn()} />
+        <JobActionList job={job} onSkip={vi.fn()} />
       </MemoryRouter>
     );
 
+    expect(screen.getByText("Tailor Resume").closest("a")).toHaveAttribute("href", "/jobs/1/resume");
     expect(screen.getByText("Tailor Resume").closest("a")).toHaveClass("bg-primary");
-    expect(screen.getByText("Find Contacts").closest("a")).toHaveClass("border-border");
-    expect(screen.getByText("Draft Referral")).toBeInTheDocument();
-  });
-
-  it("shows Open Listing when APPLY is not in the computed actions", () => {
-    render(
-      <MemoryRouter>
-        <JobActionList job={job} actions={["GENERATE_RESUME"]} onSkip={vi.fn()} />
-      </MemoryRouter>
-    );
-
-    expect(screen.getByText("Open Listing")).toBeInTheDocument();
-  });
-
-  it("omits Open Listing when APPLY is already the computed action", () => {
-    render(
-      <MemoryRouter>
-        <JobActionList job={job} actions={["GENERATE_RESUME", "GENERATE_COVER_LETTER", "APPLY"]} onSkip={vi.fn()} />
-      </MemoryRouter>
-    );
-
-    expect(screen.queryByText("Open Listing")).not.toBeInTheDocument();
-    expect(screen.getByText("Apply")).toBeInTheDocument();
-  });
-
-  it("renders not-yet-built actions as disabled", () => {
-    render(
-      <MemoryRouter>
-        <JobActionList job={job} actions={["GENERATE_COVER_LETTER"]} onSkip={vi.fn()} />
-      </MemoryRouter>
-    );
-
-    expect(screen.getByText("Cover Letter").closest("button")).toBeDisabled();
-  });
-
-  it("shows the empty-actions message when there are no computed actions", () => {
-    render(
-      <MemoryRouter>
-        <JobActionList job={job} actions={[]} onSkip={vi.fn()} />
-      </MemoryRouter>
-    );
-
-    expect(screen.getByText("No further action needed for this job.")).toBeInTheDocument();
+    expect(screen.getByText("Find Contacts").closest("a")).toHaveAttribute("href", "/jobs/1/employees");
+    expect(screen.getByText("Draft Referral").closest("a")).toHaveAttribute("href", "/jobs/1/referral");
+    expect(screen.getByText("Open Listing").closest("a")).toHaveAttribute("href", "https://acme.example/apply");
+    expect(screen.getByText("Skip")).toBeInTheDocument();
   });
 
   it("calls onSkip when the Skip action is clicked", async () => {
     const onSkip = vi.fn().mockResolvedValue(undefined);
     render(
       <MemoryRouter>
-        <JobActionList job={job} actions={["SKIP"]} onSkip={onSkip} />
+        <JobActionList job={job} onSkip={onSkip} />
       </MemoryRouter>
     );
 
@@ -86,7 +48,7 @@ describe("JobActionList", () => {
     const onSkip = vi.fn().mockRejectedValue(new Error("Failed to skip job"));
     render(
       <MemoryRouter>
-        <JobActionList job={job} actions={["SKIP"]} onSkip={onSkip} />
+        <JobActionList job={job} onSkip={onSkip} />
       </MemoryRouter>
     );
 

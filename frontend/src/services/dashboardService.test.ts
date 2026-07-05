@@ -9,7 +9,7 @@ describe("dashboardService", () => {
   it("getDashboard() gets /api/dashboard", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ success: true, message: "ok", data: { total: 1, referral: 0, directApply: 1, skip: 0, jobs: [] } })
+      json: () => Promise.resolve({ success: true, message: "ok", data: { total: 1, resumesGenerated: 0, referralsReady: 1, applied: 0, jobs: [] } })
     });
     vi.stubGlobal("fetch", fetchMock);
 

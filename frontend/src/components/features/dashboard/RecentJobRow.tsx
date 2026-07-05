@@ -9,7 +9,7 @@ interface RecentJobRowProps {
 }
 
 export default function RecentJobRow({ pipeline }: RecentJobRowProps) {
-  const { job, score, status } = pipeline;
+  const { job, status } = pipeline;
 
   return (
     <Link
@@ -29,12 +29,6 @@ export default function RecentJobRow({ pipeline }: RecentJobRowProps) {
         </p>
       </div>
       <StatusBadge tone={toneForStatus(status)}>{labelForStatus(status)}</StatusBadge>
-      <span
-        aria-label={`Match score ${score.score} out of 100`}
-        className="w-8 shrink-0 text-right text-sm font-semibold tabular-nums text-foreground"
-      >
-        {score.score}
-      </span>
     </Link>
   );
 }

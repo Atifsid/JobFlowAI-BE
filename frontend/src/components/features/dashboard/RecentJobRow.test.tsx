@@ -10,19 +10,15 @@ const pipeline: JobPipeline = {
     remote: true, description: "", skills: [], applyUrl: "https://x.com",
     source: "test", postedAt: "2026-07-01"
   },
-  score: { score: 82, missingSkills: [], strengths: [], weaknesses: [], recommendation: "Apply" },
-  decision: "REFERRAL",
-  actions: [],
   status: "REFERRAL_READY"
 };
 
 describe("RecentJobRow", () => {
-  it("renders the job title, company, status label, and score", () => {
+  it("renders the job title, company, and status label", () => {
     render(<MemoryRouter><RecentJobRow pipeline={pipeline} /></MemoryRouter>);
     expect(screen.getByText("Senior Engineer")).toBeInTheDocument();
     expect(screen.getByText(/Acme/)).toBeInTheDocument();
     expect(screen.getByText("Referral Ready")).toBeInTheDocument();
-    expect(screen.getByText("82")).toBeInTheDocument();
   });
 
   it("links to the job detail page", () => {

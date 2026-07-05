@@ -1,13 +1,13 @@
 import StatusBadge from "@/components/shared/StatusBadge";
-import type { ResumeScore } from "../../types";
 
 interface SkillBadgesProps {
-  score: ResumeScore;
+  matched: string[];
+  missing: string[];
 }
 
-export default function SkillBadges({ score }: SkillBadgesProps) {
-  const matched = score.strengths.map(s => s.replace(/^Matched:\s*/, ""));
-
+// Renders the ATS keyword check for a generated resume: which JD
+// keywords made it into the tailored resume and which are still missing.
+export default function SkillBadges({ matched, missing }: SkillBadgesProps) {
   return (
     <div className="flex flex-wrap gap-6">
       <div className="flex min-w-40 flex-col gap-1.5">
@@ -21,7 +21,7 @@ export default function SkillBadges({ score }: SkillBadgesProps) {
       <div className="flex min-w-40 flex-col gap-1.5">
         <p className="text-xs text-muted-foreground">Missing</p>
         <div className="flex flex-wrap gap-1">
-          {score.missingSkills.map(skill => (
+          {missing.map(skill => (
             <StatusBadge key={skill} tone="neutral">{skill}</StatusBadge>
           ))}
         </div>

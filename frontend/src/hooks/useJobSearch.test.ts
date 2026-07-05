@@ -13,7 +13,7 @@ describe("useJobSearch", () => {
   });
 
   it("debounces search calls by 300ms", async () => {
-    vi.mocked(jobService.search).mockResolvedValue({ total: 1, referral: 0, directApply: 1, skip: 0, jobs: [] });
+    vi.mocked(jobService.search).mockResolvedValue({ total: 1, resumesGenerated: 0, referralsReady: 1, applied: 0, jobs: [] });
 
     const { result } = renderHook(() => useJobSearch());
 

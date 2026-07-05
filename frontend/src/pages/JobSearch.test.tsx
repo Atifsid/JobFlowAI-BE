@@ -13,18 +13,12 @@ vi.mock("../services/referralService", () => ({ referralService: { generateDraft
 
 const pipeline: JobPipeline = {
   job: { id: "1", title: "Senior Engineer", company: "Acme", location: "NYC", remote: false, description: "desc", skills: [], applyUrl: "https://x.com", source: "test" },
-  score: { score: 68, missingSkills: [], strengths: [], weaknesses: [], recommendation: "Apply" },
-  decision: "DIRECT_APPLY",
-  actions: ["GENERATE_RESUME", "GENERATE_COVER_LETTER", "APPLY"],
-  status: "ANALYZED"
+  status: "DISCOVERED"
 };
 
 function makePipeline(id: string, title: string): JobPipeline {
   return {
     job: { id, title, company: "Acme", location: "NYC", remote: false, description: "", skills: [], applyUrl: "https://x.com", source: "test" },
-    score: { score: 50, missingSkills: [], strengths: [], weaknesses: [], recommendation: "" },
-    decision: "SKIP",
-    actions: [],
     status: "DISCOVERED"
   };
 }
@@ -32,7 +26,7 @@ function makePipeline(id: string, title: string): JobPipeline {
 describe("JobSearch", () => {
   it("shows results counter and job list after a search", () => {
     vi.mocked(useJobSearch).mockReturnValue({
-      result: { total: 1, referral: 0, directApply: 1, skip: 0, jobs: [pipeline], page: 1, limit: 20, totalMatches: 1 },
+      result: { total: 1, resumesGenerated: 0, referralsReady: 1, applied: 0, jobs: [pipeline], page: 1, limit: 20, totalMatches: 1 },
       loading: false, error: null, search: vi.fn()
     });
     render(<MemoryRouter><JobSearch /></MemoryRouter>);
@@ -43,27 +37,12 @@ describe("JobSearch", () => {
 
   it("links each job result to its detail page", () => {
     vi.mocked(useJobSearch).mockReturnValue({
-      result: { total: 1, referral: 0, directApply: 1, skip: 0, jobs: [pipeline], page: 1, limit: 20, totalMatches: 1 },
+      result: { total: 1, resumesGenerated: 0, referralsReady: 1, applied: 0, jobs: [pipeline], page: 1, limit: 20, totalMatches: 1 },
       loading: false, error: null, search: vi.fn()
     });
     render(<MemoryRouter><JobSearch /></MemoryRouter>);
 
     expect(screen.getByText("Senior Engineer").closest("a")).toHaveAttribute("href", "/jobs/1");
-  });
-
-  it("hides the decision badge for skipped jobs but shows it for others", () => {
-    vi.mocked(useJobSearch).mockReturnValue({
-      result: {
-        total: 2, referral: 0, directApply: 1, skip: 1,
-        jobs: [pipeline, makePipeline("2", "Skipped Job")],
-        page: 1, limit: 20, totalMatches: 2
-      },
-      loading: false, error: null, search: vi.fn()
-    });
-    render(<MemoryRouter><JobSearch /></MemoryRouter>);
-
-    expect(screen.getByText("Direct Apply")).toBeInTheDocument();
-    expect(screen.queryByText("Skip")).not.toBeInTheDocument();
   });
 
   it("submitting the filter form triggers a search with page reset to 1", () => {
@@ -80,7 +59,7 @@ describe("JobSearch", () => {
   it("shows pagination and advancing the page keeps the current filters", () => {
     const search = vi.fn();
     vi.mocked(useJobSearch).mockReturnValue({
-      result: { total: 1, referral: 0, directApply: 1, skip: 0, jobs: [pipeline], page: 1, limit: 20, totalMatches: 45 },
+      result: { total: 1, resumesGenerated: 0, referralsReady: 1, applied: 0, jobs: [pipeline], page: 1, limit: 20, totalMatches: 45 },
       loading: false, error: null, search
     });
     render(<MemoryRouter><JobSearch /></MemoryRouter>);
@@ -102,7 +81,7 @@ describe("JobSearch", () => {
 
     it("disables the 6th checkbox once 5 are selected", () => {
       vi.mocked(useJobSearch).mockReturnValue({
-        result: { total: 6, referral: 0, directApply: 0, skip: 6, jobs: sixJobs, page: 1, limit: 20, totalMatches: 6 },
+        result: { total: 6, resumesGenerated: 0, referralsReady: 0, applied: 6, jobs: sixJobs, page: 1, limit: 20, totalMatches: 6 },
         loading: false, error: null, search: vi.fn()
       });
       render(<MemoryRouter><JobSearch /></MemoryRouter>);
@@ -119,7 +98,7 @@ describe("JobSearch", () => {
 
     it("runs resume generation then referral drafting for each selected job, in order", async () => {
       vi.mocked(useJobSearch).mockReturnValue({
-        result: { total: 2, referral: 0, directApply: 0, skip: 2, jobs: sixJobs.slice(0, 2), page: 1, limit: 20, totalMatches: 2 },
+        result: { total: 2, resumesGenerated: 0, referralsReady: 0, applied: 2, jobs: sixJobs.slice(0, 2), page: 1, limit: 20, totalMatches: 2 },
         loading: false, error: null, search: vi.fn()
       });
       vi.mocked(resumeService.generate).mockResolvedValue({ pdfPath: "a.pdf" });

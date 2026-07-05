@@ -18,38 +18,21 @@ export interface Job {
   source: string;
 }
 
-export interface ResumeScore {
-  score: number;
-  missingSkills: string[];
-  strengths: string[];
-  weaknesses: string[];
-  recommendation: string;
-}
-
-export type JobDecision = "REFERRAL" | "DIRECT_APPLY" | "SKIP";
-
 export type JobStatus =
-  | "DISCOVERED" | "ANALYZED" | "RESUME_GENERATED" | "EMPLOYEES_FOUND"
+  | "DISCOVERED" | "RESUME_GENERATED" | "EMPLOYEES_FOUND"
   | "REFERRAL_READY" | "REFERRAL_SENT" | "APPLIED" | "REJECTED"
   | "INTERVIEW" | "OFFER" | "HIRED" | "SKIPPED";
 
-export type JobAction =
-  | "GENERATE_RESUME" | "GENERATE_COVER_LETTER" | "FIND_EMPLOYEES"
-  | "GENERATE_REFERRAL" | "APPLY" | "FOLLOW_UP" | "SKIP";
-
 export interface JobPipeline {
   job: Job;
-  score: ResumeScore;
-  decision: JobDecision;
-  actions: JobAction[];
   status: JobStatus;
 }
 
 export interface Dashboard {
   total: number;
-  referral: number;
-  directApply: number;
-  skip: number;
+  resumesGenerated: number;
+  referralsReady: number;
+  applied: number;
   jobs: JobPipeline[];
   page?: number;
   limit?: number;

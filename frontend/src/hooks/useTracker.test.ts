@@ -19,7 +19,7 @@ describe("useTracker", () => {
 
   it("loads the dashboard and applies a status update to the matching job", async () => {
     vi.mocked(dashboardService.getDashboard).mockResolvedValue({
-      total: 1, referral: 0, directApply: 1, skip: 0,
+      total: 1, resumesGenerated: 0, referralsReady: 1, applied: 0,
       jobs: [{ job: { id: "job-1" }, status: "DISCOVERED" } as never]
     });
     vi.mocked(jobService.updateStatus).mockResolvedValue({ job: { id: "job-1" }, status: "APPLIED" } as never);
