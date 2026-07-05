@@ -9,4 +9,7 @@ import { JobStatus } from "./job-status.model";
 export interface JobPipeline {
   job: Job;
   status: JobStatus;
+  // Target keywords extracted from the JD when the pipeline ran resume
+  // generation - input to the tailoring prompts and the ATS gate.
+  keywords?: string[];
 }

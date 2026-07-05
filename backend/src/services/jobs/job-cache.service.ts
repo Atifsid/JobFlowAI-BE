@@ -48,7 +48,7 @@ class JobCacheService {
     const status = Object.values(JobStatus).includes(raw.status as JobStatus)
       ? (raw.status as JobStatus)
       : JobStatus.DISCOVERED;
-    return { job: raw.job, status };
+    return { job: raw.job, status, ...(raw.keywords ? { keywords: raw.keywords } : {}) };
   }
 }
 

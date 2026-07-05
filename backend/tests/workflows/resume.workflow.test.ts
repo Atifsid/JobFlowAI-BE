@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { JobStatus } from "../../src/models/job-status.model";
 
-const { mockGet, mockGetPipeline, mockAdvanceStatus, mockGenerate, mockUpload, mockUpsert } = vi.hoisted(() => ({
+const { mockGet, mockGetPipeline, mockCacheSave, mockAdvanceStatus, mockGenerate, mockUpload, mockUpsert } = vi.hoisted(() => ({
   mockGet: vi.fn(),
   mockGetPipeline: vi.fn(),
+  mockCacheSave: vi.fn(),
   mockAdvanceStatus: vi.fn(),
   mockGenerate: vi.fn(),
   mockUpload: vi.fn(),
@@ -11,7 +12,7 @@ const { mockGet, mockGetPipeline, mockAdvanceStatus, mockGenerate, mockUpload, m
 }));
 
 vi.mock("../../src/services/jobs/job-cache.service", () => ({
-  default: { get: mockGet, getPipeline: mockGetPipeline, advanceStatus: mockAdvanceStatus }
+  default: { get: mockGet, getPipeline: mockGetPipeline, save: mockCacheSave, advanceStatus: mockAdvanceStatus }
 }));
 vi.mock("../../src/services/resume/resume-tailor.service", () => ({
   default: { generate: mockGenerate }
@@ -24,15 +25,16 @@ vi.mock("../../src/services/sheets/sheets.service", () => ({
 }));
 
 const job = { id: "job-1", title: "Engineer", company: "Acme", location: "NYC", remote: false, description: "", skills: [], applyUrl: "https://x.com", source: "test" };
-const pipeline = { job, status: JobStatus.RESUME_GENERATED };
+const pipeline = { job, status: JobStatus.DISCOVERED };
 
 describe("ResumeWorkflow.run", () => {
   beforeEach(() => {
     vi.resetModules();
     mockGet.mockReset().mockResolvedValue(job);
     mockGetPipeline.mockReset().mockResolvedValue(pipeline);
+    mockCacheSave.mockReset();
     mockAdvanceStatus.mockReset();
-    mockGenerate.mockReset().mockResolvedValue({ pdfPath: "storage/resumes/generated/a.pdf" });
+    mockGenerate.mockReset().mockResolvedValue({ pdfPath: "storage/resumes/generated/a.pdf", keywords: ["React", "AWS"] });
     mockUpload.mockReset().mockResolvedValue("https://drive.example/a");
     mockUpsert.mockReset();
   });
@@ -43,12 +45,13 @@ describe("ResumeWorkflow.run", () => {
     await expect(workflow.run("missing")).rejects.toThrow("Job not found.");
   });
 
-  it("advances the job's status to RESUME_GENERATED after generating", async () => {
+  it("persists the extracted keywords on the cached pipeline, then advances its status", async () => {
     vi.doMock("../../src/config/env", () => ({ env: { DRIVE_UPLOAD_ENABLED: false, GOOGLE_SHEET_ID: "" } }));
     const { default: workflow } = await import("../../src/workflows/resume.workflow");
 
     await workflow.run("job-1");
 
+    expect(mockCacheSave).toHaveBeenCalledWith({ ...pipeline, keywords: ["React", "AWS"] });
     expect(mockAdvanceStatus).toHaveBeenCalledWith("job-1", JobStatus.RESUME_GENERATED);
   });
 
@@ -68,7 +71,6 @@ describe("ResumeWorkflow.run", () => {
 
     await workflow.run("job-1");
 
-    expect(mockGetPipeline).not.toHaveBeenCalled();
     expect(mockUpsert).not.toHaveBeenCalled();
   });
 
@@ -80,5 +82,6 @@ describe("ResumeWorkflow.run", () => {
 
     expect(mockUpload).not.toHaveBeenCalled();
     expect(result).toEqual({ pdfPath: "storage/resumes/generated/a.pdf", driveLink: undefined });
+    expect(mockCacheSave).toHaveBeenCalledWith({ ...pipeline, keywords: ["React", "AWS"] });
   });
 });

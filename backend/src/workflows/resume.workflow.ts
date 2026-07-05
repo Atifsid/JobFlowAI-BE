@@ -12,7 +12,7 @@ class ResumeWorkflow {
 
     if (!job) throw new Error("Job not found.");
 
-    const { pdfPath } = await tailor.generate(job);
+    const { pdfPath, keywords } = await tailor.generate(job);
 
     let driveLink: string | undefined;
 
@@ -21,8 +21,14 @@ class ResumeWorkflow {
       driveLink = await driveService.upload(pdfPath, fileName);
     }
 
-    // Advance before the Sheets upsert below so the row reflects the new
-    // status. Forward-only: a re-run on a further-along job is a no-op.
+    // Persist the extracted keywords on the cached pipeline (the ATS
+    // gate and the UI read them from there), then advance the status -
+    // before the Sheets upsert below so the row reflects the new state.
+    // Forward-only: a re-run on a further-along job is a no-op.
+    const cached = await cache.getPipeline(jobId);
+    if (cached) {
+      await cache.save({ ...cached, keywords });
+    }
     await cache.advanceStatus(jobId, JobStatus.RESUME_GENERATED);
 
     // Sheets tracking happens here - the first step of the per-job pipeline the

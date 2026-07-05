@@ -12,19 +12,21 @@ class ResumeTailorService {
     const experience = markdownService.extract(master, "Experience");
     const projects = markdownService.extract(master, "Projects");
 
-    const newSkills = await resumeAIService.tailorSkills(
-      skills,
-      job.description
-    );
+    // One extraction feeds all three sections, so they emphasize the
+    // same keywords - and the keyword list is what the ATS gate later
+    // verifies the finished resume against.
+    const keywords = await resumeAIService.extractKeywords(job.description);
+
+    const newSkills = await resumeAIService.tailorSkills(skills, keywords);
 
     const newExperience = await resumeAIService.tailorExperience(
       experience,
-      job.description
+      keywords
     );
 
     const newProjects = await resumeAIService.tailorProjects(
       projects,
-      job.description
+      keywords
     );
 
     let tailored = master;
@@ -35,7 +37,7 @@ class ResumeTailorService {
     const pdf = await pdfRenderService.render(tailored);
     const pdfPath = await resumeService.save(job.company, job.title, pdf);
 
-    return { pdfPath };
+    return { pdfPath, keywords };
   }
 }
 
