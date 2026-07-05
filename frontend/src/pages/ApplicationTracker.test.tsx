@@ -22,7 +22,7 @@ describe("ApplicationTracker", () => {
     expect(screen.getAllByText("Senior Engineer")).toHaveLength(2); // table row + card row
     expect(screen.getAllByText("Frontend Dev")).toHaveLength(2);
 
-    fireEvent.click(screen.getByRole("button", { name: /^APPLIED/ }));
+    fireEvent.click(screen.getByRole("tab", { name: /^APPLIED/ }));
     expect(screen.queryAllByText("Senior Engineer")).toHaveLength(0);
   });
 

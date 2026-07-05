@@ -4,9 +4,13 @@ import { useTracker } from "../hooks/useTracker";
 import { runSequentiallyWithDelay, runWithConcurrency } from "../lib/bulk";
 import { resumeService } from "../services/resumeService";
 import { referralService } from "../services/referralService";
-import DataTable, { type Column } from "../components/common/DataTable";
-import Badge from "../components/common/Badge";
-import Button from "../components/common/Button";
+import DataTable, { type Column } from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import StatusBadge from "@/components/shared/StatusBadge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ALL_STATUSES, labelForStatus, toneForStatus } from "../lib/jobLabels";
 import type { JobPipeline, JobStatus } from "../types";
 
@@ -24,7 +28,7 @@ export default function ApplicationTracker() {
   const [bulkSummary, setBulkSummary] = useState<string | null>(null);
 
   if (error) return <p role="alert">{error}</p>;
-  if (loading || !dashboard) return <p>Loading...</p>;
+  if (loading || !dashboard) return <p className="text-sm text-muted-foreground">Loading...</p>;
 
   const jobs = dashboard.jobs.filter(p => tab === "ALL" || p.status === tab);
   const selectedIds = Object.keys(selected).filter(id => selected[id]);
@@ -65,18 +69,26 @@ export default function ApplicationTracker() {
       key: "select",
       label: "",
       render: row => (
-        <input type="checkbox" checked={!!selected[row.job.id]} onChange={() => toggle(row.job.id)} />
+        <Checkbox
+          checked={!!selected[row.job.id]}
+          onCheckedChange={() => toggle(row.job.id)}
+          aria-label={`Select ${row.job.title}`}
+        />
       )
     },
-    { key: "title", label: "Job", render: row => <Link to={`/jobs/${row.job.id}`}>{row.job.title}</Link> },
+    { key: "title", label: "Job", render: row => <Link to={`/jobs/${row.job.id}`} className="hover:underline">{row.job.title}</Link> },
     { key: "company", label: "Company", render: row => row.job.company },
-    { key: "status", label: "Status", render: row => <Badge tone={toneForStatus(row.status)}>{labelForStatus(row.status)}</Badge> },
+    { key: "status", label: "Status", render: row => <StatusBadge tone={toneForStatus(row.status)}>{labelForStatus(row.status)}</StatusBadge> },
     {
       key: "action",
       label: "Action",
       hideOnTablet: true,
       render: row => (
-        <select value={row.status} onChange={e => updateStatus(row.job.id, e.target.value as JobStatus)}>
+        <select
+          className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          value={row.status}
+          onChange={e => updateStatus(row.job.id, e.target.value as JobStatus)}
+        >
           {ALL_STATUSES.map(s => (
             <option key={s} value={s}>{labelForStatus(s)}</option>
           ))}
@@ -87,28 +99,32 @@ export default function ApplicationTracker() {
   ];
 
   return (
-    <div className="page">
-      <h1 className="text-display">Application Tracker</h1>
+    <div className="flex flex-col gap-6">
+      <PageHeader title="Application Tracker" />
 
-      <div className="tracker-tabs">
-        {TABS.map(t => (
-          <button key={t} className={t === tab ? "tracker-tab--active" : ""} onClick={() => setTab(t)}>
-            {t} ({t === "ALL" ? dashboard.total : dashboard.jobs.filter(j => j.status === t).length})
-          </button>
-        ))}
-      </div>
+      <Tabs value={tab} onValueChange={value => setTab(value as StatusTab)}>
+        <TabsList>
+          {TABS.map(t => (
+            <TabsTrigger key={t} value={t}>
+              {t} ({t === "ALL" ? dashboard.total : dashboard.jobs.filter(j => j.status === t).length})
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {selectedIds.length > 0 && (
-        <div className="tracker-bulk">
-          <p>{selectedIds.length} job(s) selected</p>
-          <Button disabled={bulkRunning} onClick={() => runBulk("resumes")}>
-            Generate Resumes for Selected
-          </Button>
-          <Button disabled={bulkRunning} onClick={() => runBulk("employees-referrals")}>
-            Find Employees & Draft Referrals for Selected
-          </Button>
-          {bulkSummary && <p>{bulkSummary}</p>}
-        </div>
+        <Card>
+          <CardContent className="flex flex-wrap items-center gap-3">
+            <p className="text-sm text-foreground">{selectedIds.length} job(s) selected</p>
+            <Button size="sm" disabled={bulkRunning} onClick={() => runBulk("resumes")}>
+              Generate Resumes for Selected
+            </Button>
+            <Button size="sm" variant="outline" disabled={bulkRunning} onClick={() => runBulk("employees-referrals")}>
+              Find Employees & Draft Referrals for Selected
+            </Button>
+            {bulkSummary && <p className="w-full text-xs text-muted-foreground">{bulkSummary}</p>}
+          </CardContent>
+        </Card>
       )}
 
       <DataTable columns={columns} rows={jobs} rowKey={row => row.job.id} />
