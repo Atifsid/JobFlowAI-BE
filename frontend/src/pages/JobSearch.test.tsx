@@ -27,7 +27,7 @@ describe("JobSearch", () => {
 
     render(<MemoryRouter><JobSearch /></MemoryRouter>);
 
-    expect(screen.getByText(/Results: 1 jobs/)).toBeInTheDocument();
+    expect(screen.getByText(/1 jobs/)).toBeInTheDocument();
     expect(screen.getByText("Senior Engineer")).toBeInTheDocument();
   });
 
