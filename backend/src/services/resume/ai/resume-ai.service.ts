@@ -59,7 +59,12 @@ class ResumeAIService {
         ...new Set(
           parsed
             .filter((k): k is string => typeof k === "string" && k.trim().length > 0)
-            .map(k => k.trim())
+            // JDs write compounds like "JavaScript (React)" - as one
+            // keyword that literal string never appears in a resume, so
+            // coverage can't ever count it. Split into both parts.
+            .flatMap(k => k.split(/[()]/))
+            .map(k => k.trim().replace(/[,.]$/, ""))
+            .filter(k => k.length > 0)
         )
       ];
 
@@ -70,14 +75,21 @@ class ResumeAIService {
   }
 
   // The tailoring prompts ask the model to flag likely one-page overflow
-  // with a trailing "OVERFLOW WARNING: ..." note. Left in, that text
-  // would render as visible resume content - strip it and log it instead.
+  // with an "OVERFLOW WARNING: ..." note. Left in, that text would
+  // render as visible resume content - strip it and log it instead.
+  // Models put the marker anywhere (observed live LEADING the section,
+  // which under end-of-text stripping deleted the whole section), so
+  // only the marker's own line is removed; content on both sides stays.
   private stripOverflowWarning(text: string): string {
     const index = text.indexOf(OVERFLOW_MARKER);
     if (index === -1) return text.trim();
 
-    logger.warn(text.slice(index).trim());
-    return text.slice(0, index).trim();
+    const lineEnd = text.indexOf("\n", index);
+    const warningLine = lineEnd === -1 ? text.slice(index) : text.slice(index, lineEnd);
+    logger.warn(warningLine.trim());
+
+    const rest = text.slice(0, index) + (lineEnd === -1 ? "" : text.slice(lineEnd + 1));
+    return rest.trim();
   }
 
   // Models sometimes open with the section's own name as a label

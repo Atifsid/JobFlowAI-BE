@@ -52,6 +52,14 @@ describe("ResumeAIService", () => {
       expect(result).toEqual(["React", "Node.js"]);
     });
 
+    it("splits parenthesized compounds like 'JavaScript (React)' into separate keywords", async () => {
+      mockExtractKeywords.mockResolvedValue('["JavaScript (React)", "C#"]');
+
+      const result = await resumeAIService.extractKeywords("job desc");
+
+      expect(result).toEqual(["JavaScript", "React", "C#"]);
+    });
+
     it("dedupes, trims, and caps at 20 keywords", async () => {
       const thirty = Array.from({ length: 30 }, (_, i) => `"kw-${i} "`).join(",");
       mockExtractKeywords.mockResolvedValue(`[${thirty}, "kw-0"]`);
@@ -131,6 +139,19 @@ describe("ResumeAIService", () => {
     expect(mockWarn).toHaveBeenCalledWith(
       expect.stringContaining("OVERFLOW WARNING:")
     );
+  });
+
+  it("keeps the section content when the model puts the OVERFLOW WARNING first", async () => {
+    // Observed live: the model led with the marker, and end-of-text
+    // stripping deleted the entire Projects section, crashing the run.
+    mockTailorProjects.mockResolvedValue(
+      "OVERFLOW WARNING: might not fit\n\n**HRMS** — React Native\n- Built stuff."
+    );
+
+    const result = await resumeAIService.tailorProjects("JobFlowAI", ["React"]);
+
+    expect(result).toBe("**HRMS** — React Native\n- Built stuff.");
+    expect(mockWarn).toHaveBeenCalledWith("OVERFLOW WARNING: might not fit");
   });
 
   it("passes retry feedback through to the AI service", async () => {

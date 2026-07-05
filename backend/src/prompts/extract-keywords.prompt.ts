@@ -15,6 +15,13 @@ Rules:
 - Hard skills and concrete terms only: languages, frameworks, tools,
   platforms, methodologies, certifications, domain terms. Never soft
   skills ("communication", "team player", "self-starter").
+- Never extract responsibilities or activity phrases as keywords -
+  "mentor junior developers", "knowledge sharing", "code quality
+  reviews", "troubleshooting" are NOT keywords. A keyword is a thing a
+  resume's skills list could contain, at most 2-3 words.
+- One technology per entry: "JavaScript (React)" in the posting becomes
+  two entries, "JavaScript" and "React" - never keep parentheses or
+  combine technologies in one entry.
 - Use the exact wording from the job description (e.g. "React Native",
   not "react-native"; "CI/CD", not "continuous integration" if the
   posting says CI/CD).

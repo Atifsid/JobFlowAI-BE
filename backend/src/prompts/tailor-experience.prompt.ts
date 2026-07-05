@@ -35,6 +35,10 @@ Rules:
 - Reword the bullets you keep to emphasize achievements involving the
   target keywords, using the keywords' exact wording where truthful, to
   help pass ATS screening.
+- A technology may only appear in a role's bullets if that role's
+  original bullets already mention it - never move a technology from one
+  role to another, and never add a target keyword to a role that didn't
+  use it. A missing keyword is acceptable; a false claim is not.
 - Never touch formatting, styles, fonts, or layout - return plain text only.
 - If even this condensed selection would still overflow a single page,
   say so at the end prefixed with "OVERFLOW WARNING:".
