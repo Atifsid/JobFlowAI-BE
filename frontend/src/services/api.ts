@@ -13,10 +13,12 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init
   });
 
-  const body: ApiEnvelope<T> = await res.json();
+  const body: ApiEnvelope<T> = await res.json().catch(() => null as never);
 
-  if (!res.ok || !body.success) {
-    throw new Error(body.message || `Request to ${path} failed`);
+  if (!res.ok || !body?.success) {
+    throw new Error(
+      body?.message || `Request to ${path} failed (HTTP ${res.status} ${res.statusText})`
+    );
   }
 
   return body.data as T;

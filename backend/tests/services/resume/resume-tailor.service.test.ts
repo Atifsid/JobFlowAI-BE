@@ -11,6 +11,10 @@ const {
   mockTailorProjects,
   mockExtractKeywords,
   mockEvaluate,
+  mockPartition,
+  mockCountPages,
+  mockEnforceBudgets,
+  mockTrimOneStep,
   mockWarn
 } = vi.hoisted(() => ({
   mockGetMasterResume: vi.fn(),
@@ -23,6 +27,10 @@ const {
   mockTailorProjects: vi.fn(),
   mockExtractKeywords: vi.fn(),
   mockEvaluate: vi.fn(),
+  mockPartition: vi.fn(),
+  mockCountPages: vi.fn(),
+  mockEnforceBudgets: vi.fn(),
+  mockTrimOneStep: vi.fn(),
   mockWarn: vi.fn()
 }));
 
@@ -48,7 +56,15 @@ vi.mock("../../../src/services/resume/ai/resume-ai.service", () => ({
 }));
 
 vi.mock("../../../src/services/resume/ats/ats-check.service", () => ({
-  default: { evaluate: mockEvaluate }
+  default: {
+    evaluate: mockEvaluate,
+    partitionClaimable: mockPartition,
+    countPdfPages: mockCountPages
+  }
+}));
+
+vi.mock("../../../src/services/resume/fit/resume-fit.service", () => ({
+  default: { enforceBudgets: mockEnforceBudgets, trimOneStep: mockTrimOneStep }
 }));
 
 vi.mock("../../../src/config/logger", () => ({
@@ -72,8 +88,9 @@ const job: Job = {
 
 const passingReport = {
   score: 90,
-  matchedKeywords: ["React", "AWS"],
+  matchedKeywords: ["React"],
   missingKeywords: [],
+  trueGaps: ["Python"],
   pages: 1,
   missingEmployers: [],
   passed: true
@@ -91,96 +108,105 @@ describe("ResumeTailorService.generate", () => {
     mockTailorSkills.mockReset().mockResolvedValue("skills!");
     mockTailorExperience.mockReset().mockResolvedValue("experience!");
     mockTailorProjects.mockReset().mockResolvedValue("projects!");
-    mockExtractKeywords.mockReset().mockResolvedValue(["React", "AWS"]);
+    mockExtractKeywords.mockReset().mockResolvedValue(["React", "Python"]);
+    mockPartition.mockReset().mockReturnValue({ claimable: ["React"], unclaimable: ["Python"] });
+    mockCountPages.mockReset().mockReturnValue(1);
+    mockEnforceBudgets.mockReset().mockImplementation((s: unknown) => s);
+    mockTrimOneStep.mockReset().mockReturnValue(null);
     mockEvaluate.mockReset().mockReturnValue(passingReport);
     mockWarn.mockReset();
   });
 
-  it("extracts keywords, tailors each section with them, renders, gates, and saves", async () => {
+  it("partitions keywords against the master and tailors with only the claimable ones", async () => {
     const result = await resumeTailorService.generate(job);
 
-    expect(mockExtractKeywords).toHaveBeenCalledWith("job description");
-    expect(mockTailorSkills).toHaveBeenCalledWith("Skills-original", ["React", "AWS"], undefined);
-    expect(mockTailorExperience).toHaveBeenCalledWith("Experience-original", ["React", "AWS"], undefined);
-    expect(mockTailorProjects).toHaveBeenCalledWith("Projects-original", ["React", "AWS"], undefined);
-    expect(mockRender).toHaveBeenCalledWith(
-      "# master resume+Skills:skills!+Experience:experience!+Projects:projects!"
+    expect(mockPartition).toHaveBeenCalledWith("# master resume", ["React", "Python"]);
+    expect(mockTailorSkills).toHaveBeenCalledWith("Skills-original", ["React"], undefined);
+    expect(mockTailorExperience).toHaveBeenCalledWith("Experience-original", ["React"], undefined);
+    expect(mockTailorProjects).toHaveBeenCalledWith("Projects-original", ["React"], undefined);
+    expect(mockEvaluate).toHaveBeenCalledWith(
+      expect.objectContaining({ keywords: ["React"], trueGaps: ["Python"] })
     );
-    expect(mockEvaluate).toHaveBeenCalledWith({
-      markdown: "# master resume+Skills:skills!+Experience:experience!+Projects:projects!",
-      pdf: Buffer.from("pdf-bytes"),
-      keywords: ["React", "AWS"],
-      masterExperience: "Experience-original",
-      tailoredExperience: "experience!"
-    });
-    expect(mockSave).toHaveBeenCalledWith("Acme", "Software Engineer", Buffer.from("pdf-bytes"));
-    expect(result).toEqual({
-      pdfPath: "storage/resumes/generated/acme-software-engineer.pdf",
-      keywords: ["React", "AWS"],
-      ats: passingReport
-    });
-    // Gate passed first try - no retry.
-    expect(mockTailorSkills).toHaveBeenCalledTimes(1);
+    // Full extraction (including gaps) is still what's persisted upstream.
+    expect(result.keywords).toEqual(["React", "Python"]);
+    expect(result.ats).toEqual(passingReport);
+    expect(mockWarn).toHaveBeenCalledWith(expect.stringContaining("true gaps"));
   });
 
-  it("retries once with concrete feedback when the ATS gate fails", async () => {
-    const failingReport = {
-      score: 50,
-      matchedKeywords: ["React"],
-      missingKeywords: ["AWS"],
-      pages: 2,
-      missingEmployers: ["Beta Inc"],
-      passed: false
-    };
-    mockEvaluate.mockReturnValueOnce(failingReport).mockReturnValueOnce(passingReport);
+  it("enforces content budgets in code before rendering", async () => {
+    mockEnforceBudgets.mockReturnValue({
+      skills: "trimmed-skills",
+      experience: "trimmed-experience",
+      projects: "trimmed-projects"
+    });
+
+    await resumeTailorService.generate(job);
+
+    expect(mockEnforceBudgets).toHaveBeenCalledWith({
+      skills: "skills!",
+      experience: "experience!",
+      projects: "projects!"
+    });
+    expect(mockRender).toHaveBeenCalledWith(
+      "# master resume+Skills:trimmed-skills+Experience:trimmed-experience+Projects:trimmed-projects"
+    );
+  });
+
+  it("trims one step at a time and re-renders until the PDF fits one page", async () => {
+    mockCountPages
+      .mockReturnValueOnce(2)
+      .mockReturnValueOnce(2)
+      .mockReturnValueOnce(1);
+    mockTrimOneStep
+      .mockReturnValueOnce({ skills: "s2", experience: "e2", projects: "p2" })
+      .mockReturnValueOnce({ skills: "s3", experience: "e3", projects: "p3" });
+
+    await resumeTailorService.generate(job);
+
+    expect(mockTrimOneStep).toHaveBeenCalledTimes(2);
+    expect(mockRender).toHaveBeenCalledTimes(3);
+    expect(mockRender).toHaveBeenLastCalledWith(
+      "# master resume+Skills:s3+Experience:e3+Projects:p3"
+    );
+  });
+
+  it("stops trimming when nothing is left to remove, keeping the over-length resume", async () => {
+    mockCountPages.mockReturnValue(2);
+    mockTrimOneStep.mockReturnValue(null);
+
+    await resumeTailorService.generate(job);
+
+    expect(mockWarn).toHaveBeenCalledWith(expect.stringContaining("minimum content"));
+    expect(mockSave).toHaveBeenCalled();
+  });
+
+  it("retries with feedback when claimable coverage fails, keeping the best attempt", async () => {
+    const failing = { ...passingReport, score: 50, missingKeywords: ["React"], passed: false };
+    mockEvaluate.mockReturnValueOnce(failing).mockReturnValueOnce(passingReport);
 
     const result = await resumeTailorService.generate(job);
 
     expect(mockTailorSkills).toHaveBeenCalledTimes(2);
     const feedback = mockTailorSkills.mock.calls[1][2];
-    expect(feedback).toContain("AWS");
-    expect(feedback).toContain("2 pages");
-    expect(feedback).toContain("Beta Inc");
-    expect(mockWarn).toHaveBeenCalledWith(expect.stringContaining("ATS gate failed"));
+    expect(feedback).toContain("master resume contains every one of them");
     expect(result.ats).toEqual(passingReport);
   });
 
-  it("saves the resume anyway after all retries still fail, with the failing report attached", async () => {
-    const failingReport = { ...passingReport, score: 40, missingKeywords: ["AWS"], passed: false };
-    mockEvaluate.mockReturnValue(failingReport);
-
-    const result = await resumeTailorService.generate(job);
-
-    expect(mockTailorSkills).toHaveBeenCalledTimes(3);
-    expect(mockSave).toHaveBeenCalled();
-    expect(result.ats).toEqual(failingReport);
-  });
-
-  it("always restates the standing one-page/budget constraints in retry feedback", async () => {
-    const keywordOnlyFailure = { ...passingReport, score: 60, missingKeywords: ["AWS"], passed: false };
-    mockEvaluate.mockReturnValueOnce(keywordOnlyFailure).mockReturnValueOnce(passingReport);
-
-    await resumeTailorService.generate(job);
-
-    const feedback = mockTailorSkills.mock.calls[1][2];
-    expect(feedback).toContain("one-page total");
-  });
-
-  it("keeps the best attempt when all fail: a one-page draft beats two-page ones with higher coverage", async () => {
-    const onePageLowCoverage = { ...passingReport, score: 63, missingKeywords: ["AWS"], pages: 1, passed: false };
-    const twoPageHighCoverage = { ...passingReport, score: 94, missingKeywords: [], pages: 2, passed: false };
+  it("saves the best attempt when all attempts fail", async () => {
+    const worse = { ...passingReport, score: 40, missingKeywords: ["React"], passed: false };
+    const better = { ...passingReport, score: 60, missingKeywords: [], passed: false, pages: 1 };
     mockEvaluate
-      .mockReturnValueOnce(onePageLowCoverage)
-      .mockReturnValueOnce(twoPageHighCoverage)
-      .mockReturnValueOnce(twoPageHighCoverage);
+      .mockReturnValueOnce(worse)
+      .mockReturnValueOnce(better)
+      .mockReturnValueOnce(worse);
     mockRender
-      .mockResolvedValueOnce(Buffer.from("attempt-1-pdf"))
-      .mockResolvedValueOnce(Buffer.from("attempt-2-pdf"))
-      .mockResolvedValueOnce(Buffer.from("attempt-3-pdf"));
+      .mockResolvedValueOnce(Buffer.from("pdf-1"))
+      .mockResolvedValueOnce(Buffer.from("pdf-2"))
+      .mockResolvedValueOnce(Buffer.from("pdf-3"));
 
     const result = await resumeTailorService.generate(job);
 
-    expect(mockSave).toHaveBeenCalledWith("Acme", "Software Engineer", Buffer.from("attempt-1-pdf"));
-    expect(result.ats).toEqual(onePageLowCoverage);
+    expect(mockSave).toHaveBeenCalledWith("Acme", "Software Engineer", Buffer.from("pdf-2"));
+    expect(result.ats).toEqual(better);
   });
 });

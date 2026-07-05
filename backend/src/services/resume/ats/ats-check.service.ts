@@ -10,9 +10,14 @@ interface AtsCheckInput {
   // The full tailored resume markdown (all sections substituted in).
   markdown: string;
   pdf: Buffer;
+  // The CLAIMABLE keywords (present in the master resume) - see
+  // partitionClaimable.
   keywords: string[];
+  // JD keywords the master resume doesn't contain - passed through to
+  // the report as fit gaps, never counted against the generation.
+  trueGaps: string[];
   // The master resume's Experience section and its tailored replacement,
-  // for the no-dropped-employer check.
+  // for the no-dropped-role check.
   masterExperience: string;
   tailoredExperience: string;
 }
@@ -29,17 +34,30 @@ class AtsCheckService {
       input.tailoredExperience
     );
 
+    // With no claimable keywords at all there's nothing for coverage to
+    // measure - the job is simply a poor fit (all keywords in trueGaps);
+    // don't fail the generation for it.
+    const coverageOk =
+      input.keywords.length === 0 || score >= COVERAGE_THRESHOLD;
+
     return {
       score,
       matchedKeywords: matched,
       missingKeywords: missing,
+      trueGaps: input.trueGaps,
       pages,
       missingEmployers,
-      passed:
-        score >= COVERAGE_THRESHOLD &&
-        pages <= MAX_PAGES &&
-        missingEmployers.length === 0
+      passed: coverageOk && pages <= MAX_PAGES && missingEmployers.length === 0
     };
+  }
+
+  // Splits the JD's keywords into what the master resume actually
+  // contains (claimable - the tailoring prompts and the coverage gate
+  // work on these) and what it doesn't (true gaps - no honest resume can
+  // add them, so demanding them just makes the model fabricate).
+  partitionClaimable(masterResume: string, keywords: string[]) {
+    const { matched, missing } = this.matchKeywords(masterResume, keywords);
+    return { claimable: matched, unclaimable: missing };
   }
 
   // Case-insensitive whole-term match: "Java" must not count because
@@ -66,7 +84,7 @@ class AtsCheckService {
   // "/Type /Page" objects works directly; the page-tree "/Count N"
   // maximum is the fallback. Verified against real Playwright output
   // (1-page and 65-page documents).
-  private countPdfPages(pdf: Buffer): number {
+  countPdfPages(pdf: Buffer): number {
     const text = pdf.toString("latin1");
 
     const pageObjects = (text.match(/\/Type\s*\/Page[^s]/g) ?? []).length;

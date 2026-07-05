@@ -104,6 +104,12 @@ export default function JobDetailPanel({
               </div>
             </div>
             <SkillBadges matched={ats.matchedKeywords} missing={ats.missingKeywords} />
+            {(ats.trueGaps?.length ?? 0) > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Not in your master resume (true fit gaps, excluded from the score):{" "}
+                {ats.trueGaps?.join(", ")}
+              </p>
+            )}
           </>
         )}
 

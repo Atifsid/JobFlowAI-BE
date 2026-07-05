@@ -28,6 +28,10 @@ export interface AtsReport {
   score: number;
   matchedKeywords: string[];
   missingKeywords: string[];
+  // JD keywords absent from the master resume - fit gaps, not
+  // generation failures. Optional: reports persisted before this field
+  // existed don't have it.
+  trueGaps?: string[];
   pages: number;
   missingEmployers: string[];
   passed: boolean;

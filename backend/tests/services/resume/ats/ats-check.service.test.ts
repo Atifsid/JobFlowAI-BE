@@ -18,6 +18,7 @@ const masterExperience = `**Senior Engineer** | Acme Corp | Jan 2024 – Present
 
 const baseInput = {
   pdf: pdfWithPages(1),
+  trueGaps: [] as string[],
   masterExperience,
   tailoredExperience: masterExperience
 };
@@ -34,6 +35,7 @@ describe("AtsCheckService.evaluate", () => {
       score: 100,
       matchedKeywords: ["React", "TypeScript", "Node.js", "AWS"],
       missingKeywords: [],
+      trueGaps: [],
       pages: 1,
       missingEmployers: [],
       passed: true
@@ -132,14 +134,42 @@ describe("AtsCheckService.evaluate", () => {
     expect(report.passed).toBe(false);
   });
 
-  it("scores 0 when there are no keywords to check", () => {
+  it("passes with score 0 when there are no claimable keywords - a poor-fit job isn't a generation failure", () => {
     const report = atsCheckService.evaluate({
       ...baseInput,
       markdown: "anything",
-      keywords: []
+      keywords: [],
+      trueGaps: ["Python", "WPF"]
     });
 
     expect(report.score).toBe(0);
-    expect(report.passed).toBe(false);
+    expect(report.trueGaps).toEqual(["Python", "WPF"]);
+    expect(report.passed).toBe(true);
+  });
+});
+
+describe("AtsCheckService.partitionClaimable", () => {
+  it("splits keywords into those present in the master resume and true gaps", () => {
+    const master = "Skills: React, TypeScript, Node.js";
+
+    const { claimable, unclaimable } = atsCheckService.partitionClaimable(master, [
+      "React",
+      "Python",
+      "TypeScript",
+      "WPF"
+    ]);
+
+    expect(claimable).toEqual(["React", "TypeScript"]);
+    expect(unclaimable).toEqual(["Python", "WPF"]);
+  });
+
+  it("uses whole-term matching: Java in the JD is a gap when the master only has JavaScript", () => {
+    const { claimable, unclaimable } = atsCheckService.partitionClaimable(
+      "Skills: JavaScript",
+      ["Java"]
+    );
+
+    expect(claimable).toEqual([]);
+    expect(unclaimable).toEqual(["Java"]);
   });
 });
