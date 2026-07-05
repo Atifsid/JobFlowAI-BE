@@ -9,6 +9,7 @@ import sheetsService from "../services/sheets/sheets.service";
 import { Workflow } from "../types/workflow";
 import { toSheetRow } from "../services/sheets/job-record.mapper";
 import cache from "../services/jobs/job-cache.service";
+import { Job } from "../models/job.model";
 
 const providers: JobProvider[] = [jobspediaProvider, greenhouseProvider];
 
@@ -21,18 +22,18 @@ class SearchJobsWorkflow implements Workflow<JobSearch, Dashboard> {
       const jobs = results.flatMap(r => r.jobs);
       const totalMatches = results.reduce((sum, r) => sum + r.total, 0);
 
-      const newJobs = [];
+      const newJobs: Job[] = [];
 
-      for (const job of jobs) {
-        if (await sheetsService.exists(job.id)) continue;
-        newJobs.push(job);
-      }
+      // for (const job of jobs) {
+      //   if (await sheetsService.exists(job.id)) continue;
+      //   newJobs.push(job);
+      // }
 
       const pipeline = await pipelineService.runMany(newJobs);
 
       for (const item of pipeline) {
         await cache.save(item);
-        await sheetsService.upsert(item.job.id, toSheetRow(item));
+        // await sheetsService.upsert(item.job.id, toSheetRow(item));
       }
 
       return dashboardService.build(pipeline, {

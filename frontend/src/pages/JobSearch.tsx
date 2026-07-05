@@ -1,10 +1,15 @@
 import { useState } from "react";
+import { SearchXIcon } from "lucide-react";
 import { useJobSearch } from "../hooks/useJobSearch";
 import { useJobStatusUpdate } from "../hooks/useJobStatusUpdate";
-import JobCard from "../components/features/JobCard";
 import JobDetailPanel from "../components/features/JobDetailPanel";
-import JobFilters from "../components/features/JobFilters";
-import Pagination from "../components/common/Pagination";
+import JobFilters from "../components/features/job-search/JobFilters";
+import JobResultRow from "../components/features/job-search/JobResultRow";
+import PageHeader from "@/components/shared/PageHeader";
+import Pagination from "@/components/shared/Pagination";
+import EmptyState from "@/components/shared/EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import type { FormEvent } from "react";
 import type { JobSearchParams, JobStatus } from "../types";
 
@@ -44,37 +49,50 @@ export default function JobSearch() {
     result?.totalMatches !== undefined ? Math.max(1, Math.ceil(result.totalMatches / PAGE_SIZE)) : 1;
 
   return (
-    <div className="page">
-      <h1 className="text-display">Job Search</h1>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Job Search"
+        description={
+          result
+            ? `${result.total} jobs · Referral ${result.referral} · Apply ${result.directApply} · Skip ${result.skip}`
+            : undefined
+        }
+      />
 
       {error && <p role="alert">{error}</p>}
 
-      {result && (
-        <p className="text-small">
-          Results: {result.total} jobs | Referral: {result.referral} | Apply: {result.directApply} | Skip: {result.skip}
-        </p>
-      )}
-
-      <div className={`job-search-layout${selectedId ? " job-search-layout--detail" : ""}`}>
+      <div className={`grid gap-6 ${selectedId ? "lg:grid-cols-[280px_1fr_1fr]" : "lg:grid-cols-[280px_1fr]"}`}>
         <JobFilters filters={filters} onChange={setFilters} onSubmit={onFiltersSubmit} loading={loading} />
 
-        <div className="job-search-list">
-          {result?.jobs.map(pipeline => (
-            <JobCard
-              key={pipeline.job.id}
-              pipeline={pipeline}
-              selected={pipeline.job.id === selectedId}
-              onClick={() => setSelectedId(pipeline.job.id)}
-            />
-          ))}
-          {result && <Pagination page={page} totalPages={totalPages} onPageChange={onPageChange} />}
+        <div className={`flex flex-col gap-2 ${selectedId ? "hidden lg:flex" : ""}`}>
+          {loading
+            ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)
+            : result?.jobs.length === 0
+              ? (
+                <EmptyState
+                  icon={SearchXIcon}
+                  title="No results"
+                  description="Try widening your filters — fewer required fields usually surfaces more matches."
+                />
+              )
+              : result?.jobs.map(pipeline => (
+                <JobResultRow
+                  key={pipeline.job.id}
+                  pipeline={pipeline}
+                  selected={pipeline.job.id === selectedId}
+                  onSelect={() => setSelectedId(pipeline.job.id)}
+                />
+              ))}
+          {result && result.jobs.length > 0 && (
+            <Pagination page={page} totalPages={totalPages} onPageChange={onPageChange} />
+          )}
         </div>
 
         {selected && (
-          <div className="job-search-detail">
-            <button className="back-button" onClick={() => setSelectedId(null)}>
+          <div className="flex flex-col gap-3">
+            <Button variant="ghost" size="sm" className="self-start" onClick={() => setSelectedId(null)}>
               ← Back
-            </button>
+            </Button>
             <JobDetailPanel pipeline={selected} onStatusChange={onStatusChange} />
           </div>
         )}
