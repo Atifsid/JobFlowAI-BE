@@ -19,6 +19,7 @@ const masterExperience = `**Senior Engineer** | Acme Corp | Jan 2024 – Present
 const baseInput = {
   pdf: pdfWithPages(1),
   trueGaps: [] as string[],
+  inferredSkills: [] as import("../../../../src/models/ats-report.model").InferredSkill[],
   masterExperience,
   tailoredExperience: masterExperience
 };
@@ -37,6 +38,7 @@ describe("AtsCheckService.evaluate", () => {
       matchedKeywords: ["React", "TypeScript", "Node.js", "AWS"],
       missingKeywords: [],
       trueGaps: [],
+      inferredSkills: [],
       pages: 1,
       missingEmployers: [],
       passed: true
@@ -163,6 +165,38 @@ describe("AtsCheckService.evaluate", () => {
     expect(report.trueGaps).toEqual(["Python", "WPF"]);
     expect(report.passed).toBe(true);
   });
+
+  it("matches an aliased keyword spelling against the rendered resume text", () => {
+    // The JD said "React.js"; the resume (following the tailoring
+    // prompt's "use the keyword's exact wording" rule) also renders it as
+    // "React.js" - this must match without needing a plain "React" match.
+    const report = atsCheckService.evaluate({
+      ...baseInput,
+      markdown: "Built with React.js and TypeScript.",
+      keywords: ["React.js", "TypeScript"]
+    });
+
+    expect(report.matchedKeywords).toEqual(["React.js", "TypeScript"]);
+    expect(report.claimableCoverage).toBe(100);
+  });
+
+  it("counts inferred skills toward score without requiring them in the rendered text", () => {
+    const report = atsCheckService.evaluate({
+      ...baseInput,
+      markdown: "Built with React.",
+      keywords: ["React"],
+      trueGaps: ["Python"],
+      inferredSkills: [
+        { skill: "HTML", parent: "React", confidence: 0.99, reason: "React requires HTML." },
+        { skill: "CSS", parent: "React", confidence: 0.97, reason: "React apps need styling." }
+      ]
+    });
+
+    // 1 claimable (React, matched) + 2 inferred + 1 true gap = 4 total.
+    expect(report.score).toBe(75); // (1 matched + 2 inferred) / 4
+    expect(report.claimableCoverage).toBe(100); // unaffected by inference
+    expect(report.inferredSkills).toHaveLength(2);
+  });
 });
 
 describe("AtsCheckService.partitionClaimable", () => {
@@ -188,5 +222,44 @@ describe("AtsCheckService.partitionClaimable", () => {
 
     expect(claimable).toEqual([]);
     expect(unclaimable).toEqual(["Java"]);
+  });
+
+  it("claims a keyword via alias, keeping the JD's own wording rather than the master's", () => {
+    // Master resume says "React"; JD says "React.js" - the real ATS this
+    // company runs likely scans for "React.js" literally, so the
+    // claimable list (and therefore the tailoring prompts) should keep
+    // that exact spelling rather than silently normalizing to "React".
+    const master = "Skills: React, TypeScript";
+
+    const { claimable, unclaimable } = atsCheckService.partitionClaimable(master, [
+      "React.js",
+      "Postgres"
+    ]);
+
+    expect(claimable).toEqual(["React.js"]);
+    expect(unclaimable).toEqual(["Postgres"]);
+  });
+
+  it("claims Postgres via alias when the master only says PostgreSQL", () => {
+    const master = "Databases: PostgreSQL, MySQL";
+
+    const { claimable } = atsCheckService.partitionClaimable(master, ["Postgres"]);
+
+    expect(claimable).toEqual(["Postgres"]);
+  });
+
+  it("reclaims a foundational keyword implied by a claimed technology instead of counting it as a gap", () => {
+    const master = "Skills: React, TypeScript";
+
+    const { claimable, unclaimable, inferred } = atsCheckService.partitionClaimable(master, [
+      "React",
+      "HTML",
+      "Hooks",
+      "Kubernetes"
+    ]);
+
+    expect(claimable).toEqual(["React"]);
+    expect(unclaimable).toEqual(["Kubernetes"]);
+    expect(inferred.map(i => i.skill)).toEqual(expect.arrayContaining(["HTML", "Hooks"]));
   });
 });

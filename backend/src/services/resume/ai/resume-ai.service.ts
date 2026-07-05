@@ -4,6 +4,31 @@ import logger from "../../../config/logger";
 const OVERFLOW_MARKER = "OVERFLOW WARNING:";
 const MAX_KEYWORDS = 20;
 
+// The extraction prompt explicitly forbids responsibilities/activity
+// phrases, but local models emit them anyway - observed live: "Code
+// Review", "Web Development", "Web Performance Optimization" all leaked
+// through and became "true gaps" no resume could ever claim, since
+// they're not real skills to begin with. This is a deterministic
+// backstop matching the recurring SHAPE of the violation, not a full
+// classifier - it won't catch everything, but it catches what's actually
+// been observed to recur.
+const ACTIVITY_PHRASE_PATTERNS = [
+  /\b(code|design|peer|sprint)\s+review\b/i,
+  /\b(web|mobile app|full[- ]stack|backend|frontend|software)\s+(development|engineering)\b/i,
+  /\bperformance\s+optimi[sz]ation\b/i,
+  /\bcross[- ]platform\s+compatibility\b/i,
+  /\bquantitative\s+analysis\b/i,
+  /\b(research|analysis|research and)\s+tools?\b/i,
+  /\bdata\s+platforms?\b/i,
+  /\bscalable\s+apps?\b/i,
+  /\btravel\s+planning\b/i,
+  /\bknowledge\s+sharing\b/i
+];
+
+function isActivityPhrase(keyword: string): boolean {
+  return ACTIVITY_PHRASE_PATTERNS.some(pattern => pattern.test(keyword));
+}
+
 class ResumeAIService {
   // Asks the model for the JD's target keywords as a JSON array. Local
   // models don't always return clean JSON, so parsing is defensive
@@ -65,6 +90,7 @@ class ResumeAIService {
             .flatMap(k => k.split(/[()]/))
             .map(k => k.trim().replace(/[,.]$/, ""))
             .filter(k => k.length > 0)
+            .filter(k => !isActivityPhrase(k))
         )
       ];
 

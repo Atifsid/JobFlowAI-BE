@@ -1,4 +1,6 @@
-import { AtsReport } from "../../../models/ats-report.model";
+import { AtsReport, InferredSkill } from "../../../models/ats-report.model";
+import { aliasesOf } from "./skill-aliases";
+import inferredSkillsService from "./inferred-skills.service";
 
 // The pass bar for a generated resume: enough JD keywords present, one
 // page, and no employer silently dropped from the work history. All
@@ -10,12 +12,16 @@ interface AtsCheckInput {
   // The full tailored resume markdown (all sections substituted in).
   markdown: string;
   pdf: Buffer;
-  // The CLAIMABLE keywords (present in the master resume) - see
-  // partitionClaimable.
+  // The CLAIMABLE keywords (present in the master resume, or covered by
+  // an inferred foundational skill) - see partitionClaimable.
   keywords: string[];
-  // JD keywords the master resume doesn't contain - passed through to
-  // the report as fit gaps, never counted against the generation.
+  // JD keywords the master resume doesn't contain and no claimed skill
+  // implies - passed through to the report as fit gaps, never counted
+  // against the generation.
   trueGaps: string[];
+  // Which of the claimable keywords were credited via inference rather
+  // than an explicit match, for transparency on the report.
+  inferredSkills: InferredSkill[];
   // The master resume's Experience section and its tailored replacement,
   // for the no-dropped-role check.
   masterExperience: string;
@@ -26,19 +32,23 @@ class AtsCheckService {
   evaluate(input: AtsCheckInput): AtsReport {
     const { matched, missing } = this.matchKeywords(input.markdown, input.keywords);
 
-    // Two different questions, two different denominators:
-    // - score: how well does this resume match the JD (all keywords,
-    //   gaps included) - the number a real ATS would effectively compute,
-    //   and the one shown to the user to rank jobs by fit.
-    // - claimableCoverage: did the generator include everything it
-    //   truthfully could - the gate metric. With claimable-only prompts
-    //   and code-enforced budgets this should be high; a low overall
-    //   score with high claimableCoverage means "poor-fit job", not
-    //   "bad generation".
-    const totalKeywords = input.keywords.length + input.trueGaps.length;
-    const score = totalKeywords
-      ? Math.round((matched.length / totalKeywords) * 100)
-      : 0;
+    // Three different questions, three different roles:
+    // - score: how well does this resume match the JD (literal keywords
+    //   found + inferred foundational skills, true gaps included) - the
+    //   number a real ATS would effectively compute, shown to the user to
+    //   rank jobs by fit.
+    // - claimableCoverage: did the generator include everything it could
+    //   literally claim - the gate metric, scoped to explicit keywords
+    //   only. Inferred skills are true regardless of what the generator
+    //   wrote, so they don't belong in a "did the generator do its job"
+    //   number.
+    // - inferredSkills: never required to literally appear in the
+    //   rendered text (that's the point - "HTML" doesn't need to be
+    //   spelled out for a candidate who ships production React), so they
+    //   count toward score but are reported separately for transparency.
+    const totalKeywords = input.keywords.length + input.trueGaps.length + input.inferredSkills.length;
+    const matchedCount = matched.length + input.inferredSkills.length;
+    const score = totalKeywords ? Math.round((matchedCount / totalKeywords) * 100) : 0;
     const claimableCoverage = input.keywords.length
       ? Math.round((matched.length / input.keywords.length) * 100)
       : 100;
@@ -55,6 +65,7 @@ class AtsCheckService {
       matchedKeywords: matched,
       missingKeywords: missing,
       trueGaps: input.trueGaps,
+      inferredSkills: input.inferredSkills,
       pages,
       missingEmployers,
       passed:
@@ -64,30 +75,48 @@ class AtsCheckService {
     };
   }
 
-  // Splits the JD's keywords into what the master resume actually
-  // contains (claimable - the tailoring prompts and the coverage gate
-  // work on these) and what it doesn't (true gaps - no honest resume can
-  // add them, so demanding them just makes the model fabricate).
+  // Splits the JD's keywords into three buckets: what the master resume
+  // literally contains (claimable - the tailoring prompts and the
+  // coverage gate work on these), what it doesn't but a stronger claimed
+  // technology implies (inferred - true regardless of the generator's
+  // output, never counted as a gap), and genuine gaps (unclaimable - no
+  // honest resume can add them, so demanding them just makes the model
+  // fabricate).
   partitionClaimable(masterResume: string, keywords: string[]) {
     const { matched, missing } = this.matchKeywords(masterResume, keywords);
-    return { claimable: matched, unclaimable: missing };
+    const masterInferred = inferredSkillsService.fromMasterResume(masterResume);
+
+    const inferred: InferredSkill[] = [];
+    const unclaimable: string[] = [];
+
+    for (const keyword of missing) {
+      const hit = inferredSkillsService.findCovering(keyword, masterInferred);
+      if (hit) inferred.push(hit);
+      else unclaimable.push(keyword);
+    }
+
+    return { claimable: matched, unclaimable, inferred };
   }
 
   // Case-insensitive whole-term match: "Java" must not count because
   // "JavaScript" appears. Keywords can contain non-word characters
   // ("CI/CD", "Node.js"), so boundaries are checked manually instead of
-  // relying on \b.
+  // relying on \b. Alias-aware: a keyword matches if ANY of its known
+  // equivalent spellings ("React.js" / "React") appears in the text, but
+  // the ORIGINAL keyword string is what's recorded - so a claimable
+  // keyword keeps the JD's own wording (helps the tailoring prompts match
+  // the exact term a real ATS would scan for).
   private matchKeywords(text: string, keywords: string[]) {
     const matched: string[] = [];
     const missing: string[] = [];
 
     for (const keyword of keywords) {
-      const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const pattern = new RegExp(
-        `(?<![A-Za-z0-9])${escaped}(?![A-Za-z0-9])`,
-        "i"
-      );
-      (pattern.test(text) ? matched : missing).push(keyword);
+      const found = aliasesOf(keyword).some(alias => {
+        const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const pattern = new RegExp(`(?<![A-Za-z0-9])${escaped}(?![A-Za-z0-9])`, "i");
+        return pattern.test(text);
+      });
+      (found ? matched : missing).push(keyword);
     }
 
     return { matched, missing };

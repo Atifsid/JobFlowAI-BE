@@ -99,6 +99,32 @@ describe("ResumeAIService", () => {
         "Keyword extraction failed"
       );
     });
+
+    it("filters out activity/responsibility phrases the prompt forbids but the model leaks anyway", async () => {
+      // Observed live: qwen2.5 extracted these despite the prompt's own
+      // "never extract responsibilities or activity phrases" rule - each
+      // became an uncatchable "true gap" since they're not real skills.
+      mockExtractKeywords.mockResolvedValue(
+        JSON.stringify([
+          "React",
+          "Code Review",
+          "Web Development",
+          "Full-Stack Engineering",
+          "Web Performance Optimization",
+          "Cross-Platform Compatibility",
+          "Quantitative Analysis",
+          "Research Tools",
+          "Data Platforms",
+          "Scalable Apps",
+          "Travel Planning",
+          "TypeScript"
+        ])
+      );
+
+      const result = await resumeAIService.extractKeywords("job desc");
+
+      expect(result).toEqual(["React", "TypeScript"]);
+    });
   });
 
   it("delegates tailorSkills to the AI service with the keyword list", async () => {

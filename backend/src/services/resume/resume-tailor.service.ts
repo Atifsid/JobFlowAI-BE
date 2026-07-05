@@ -29,7 +29,10 @@ class ResumeTailorService {
     // tailoring toward - the rest are true fit gaps that no honest
     // resume can claim. Feeding them to the model just invites
     // fabrication, and gating on them made poor-fit jobs unpassable.
-    const { claimable, unclaimable } = atsCheckService.partitionClaimable(master, keywords);
+    // Keywords a stronger claimed technology implies (inferred) are
+    // neither - they're true regardless of what the generator writes, so
+    // they're excluded from the gaps without being handed to the model.
+    const { claimable, unclaimable, inferred } = atsCheckService.partitionClaimable(master, keywords);
 
     if (unclaimable.length > 0) {
       logger.warn(
@@ -68,11 +71,30 @@ class ResumeTailorService {
         pdf = await pdfRenderService.render(tailored);
       }
 
+      // Still comfortably under one page? Add real content back from the
+      // master's un-tailored sections rather than leaving the page
+      // under-filled - never fabricated, and backed off the moment it
+      // would overflow. Same deterministic, no-AI-calls shape as the trim
+      // loop above, just running in the opposite direction.
+      while (atsCheckService.countPdfPages(pdf) <= 1) {
+        const grown = resumeFitService.growOneStep(sections, { skills, experience, projects });
+        if (!grown) break;
+
+        const candidateTailored = this.assemble(master, grown);
+        const candidatePdf = await pdfRenderService.render(candidateTailored);
+        if (atsCheckService.countPdfPages(candidatePdf) > 1) break;
+
+        sections = grown;
+        tailored = candidateTailored;
+        pdf = candidatePdf;
+      }
+
       const ats = atsCheckService.evaluate({
         markdown: tailored,
         pdf,
         keywords: claimable,
         trueGaps: unclaimable,
+        inferredSkills: inferred,
         masterExperience: experience,
         tailoredExperience: sections.experience
       });

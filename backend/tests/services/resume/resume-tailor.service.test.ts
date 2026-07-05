@@ -15,6 +15,7 @@ const {
   mockCountPages,
   mockEnforceBudgets,
   mockTrimOneStep,
+  mockGrowOneStep,
   mockWarn
 } = vi.hoisted(() => ({
   mockGetMasterResume: vi.fn(),
@@ -31,6 +32,7 @@ const {
   mockCountPages: vi.fn(),
   mockEnforceBudgets: vi.fn(),
   mockTrimOneStep: vi.fn(),
+  mockGrowOneStep: vi.fn(),
   mockWarn: vi.fn()
 }));
 
@@ -64,7 +66,7 @@ vi.mock("../../../src/services/resume/ats/ats-check.service", () => ({
 }));
 
 vi.mock("../../../src/services/resume/fit/resume-fit.service", () => ({
-  default: { enforceBudgets: mockEnforceBudgets, trimOneStep: mockTrimOneStep }
+  default: { enforceBudgets: mockEnforceBudgets, trimOneStep: mockTrimOneStep, growOneStep: mockGrowOneStep }
 }));
 
 vi.mock("../../../src/config/logger", () => ({
@@ -110,10 +112,11 @@ describe("ResumeTailorService.generate", () => {
     mockTailorExperience.mockReset().mockResolvedValue("experience!");
     mockTailorProjects.mockReset().mockResolvedValue("projects!");
     mockExtractKeywords.mockReset().mockResolvedValue(["React", "Python"]);
-    mockPartition.mockReset().mockReturnValue({ claimable: ["React"], unclaimable: ["Python"] });
+    mockPartition.mockReset().mockReturnValue({ claimable: ["React"], unclaimable: ["Python"], inferred: [] });
     mockCountPages.mockReset().mockReturnValue(1);
     mockEnforceBudgets.mockReset().mockImplementation((s: unknown) => s);
     mockTrimOneStep.mockReset().mockReturnValue(null);
+    mockGrowOneStep.mockReset().mockReturnValue(null);
     mockEvaluate.mockReset().mockReturnValue(passingReport);
     mockWarn.mockReset();
   });
@@ -126,7 +129,7 @@ describe("ResumeTailorService.generate", () => {
     expect(mockTailorExperience).toHaveBeenCalledWith("Experience-original", ["React"], undefined);
     expect(mockTailorProjects).toHaveBeenCalledWith("Projects-original", ["React"], undefined);
     expect(mockEvaluate).toHaveBeenCalledWith(
-      expect.objectContaining({ keywords: ["React"], trueGaps: ["Python"] })
+      expect.objectContaining({ keywords: ["React"], trueGaps: ["Python"], inferredSkills: [] })
     );
     // Full extraction (including gaps) is still what's persisted upstream.
     expect(result.keywords).toEqual(["React", "Python"]);
@@ -179,6 +182,45 @@ describe("ResumeTailorService.generate", () => {
 
     expect(mockWarn).toHaveBeenCalledWith(expect.stringContaining("minimum content"));
     expect(mockSave).toHaveBeenCalled();
+  });
+
+  it("grows content back one step at a time while the page has room, stopping before it overflows", async () => {
+    // Initial render fits (1 page). First grow step still fits (1 page)
+    // and is kept; second grow step overflows (2 pages) and is discarded,
+    // so growOneStep is tried twice but only one growth survives.
+    mockCountPages
+      .mockReturnValueOnce(1) // initial render, exits trim loop immediately
+      .mockReturnValueOnce(1) // grow loop's own condition check
+      .mockReturnValueOnce(1) // first grown candidate still fits
+      .mockReturnValueOnce(1) // grow loop re-checks, still <= 1
+      .mockReturnValueOnce(2); // second grown candidate overflows - discarded
+    mockGrowOneStep
+      .mockReturnValueOnce({ skills: "s2", experience: "e2", projects: "p2" })
+      .mockReturnValueOnce({ skills: "s3", experience: "e3", projects: "p3" });
+
+    await resumeTailorService.generate(job);
+
+    // Both grow attempts render (to find out whether they'd overflow),
+    // but only the first is kept - the second overflowed and is
+    // discarded, so it must never reach the ATS evaluation.
+    expect(mockGrowOneStep).toHaveBeenCalledTimes(2);
+    expect(mockRender).toHaveBeenCalledTimes(3);
+    expect(mockEvaluate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        markdown: "# master resume+Skills:s2+Experience:e2+Projects:p2"
+      })
+    );
+  });
+
+  it("never grows past one page and passes the master's un-tailored sections to growOneStep", async () => {
+    mockGrowOneStep.mockReturnValue(null);
+
+    await resumeTailorService.generate(job);
+
+    expect(mockGrowOneStep).toHaveBeenCalledWith(
+      { skills: "skills!", experience: "experience!", projects: "projects!" },
+      { skills: "Skills-original", experience: "Experience-original", projects: "Projects-original" }
+    );
   });
 
   it("retries with feedback when claimable coverage fails, keeping the best attempt", async () => {

@@ -16,7 +16,18 @@ export interface AtsReport {
   // resume can claim them, so they're reported as fit gaps rather than
   // counted against the generation.
   trueGaps: string[];
+  // JD keywords not explicitly in the master resume but credited as
+  // claimable anyway because a stronger technology the candidate already
+  // has implies them (e.g. "HTML" via React) - see inferred-skills.service.
+  inferredSkills: InferredSkill[];
   pages: number;
   missingEmployers: string[];
   passed: boolean;
+}
+
+export interface InferredSkill {
+  skill: string;
+  parent: string;
+  confidence: number;
+  reason: string;
 }
