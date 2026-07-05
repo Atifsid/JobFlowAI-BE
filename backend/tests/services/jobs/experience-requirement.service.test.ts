@@ -54,6 +54,42 @@ describe("ExperienceRequirementService.extract", () => {
   });
 });
 
+describe("ExperienceRequirementService.resolve", () => {
+  it("prefers years extracted from the JD text over any seniority fallback", () => {
+    expect(experienceRequirementService.resolve("Looking for 3-5 years of experience", "principal")).toEqual({
+      min: 3,
+      max: 5
+    });
+  });
+
+  it("falls back to a seniority estimate when the JD text is a one-sentence teaser with no years", () => {
+    // Observed live: every Oracle Recruiting Cloud / JPMC posting in this
+    // dataset has a short teaser description like this one - no years
+    // mention at all - so relying on JD text alone let every "Lead"/
+    // "Principal" title through a 3-4 year search regardless of the filter.
+    expect(
+      experienceRequirementService.resolve(
+        "Carry out critical tech solutions across multiple technical areas as an integral part of an agile team",
+        "lead"
+      )
+    ).toEqual({ min: 6, max: 15 });
+    expect(
+      experienceRequirementService.resolve(
+        "Provide expertise and engineering excellence to enhance, build and deliver market-leading technologies",
+        "principal"
+      )
+    ).toEqual({ min: 10 });
+  });
+
+  it("returns null when there's truly no signal - no JD years and no seniority label", () => {
+    expect(experienceRequirementService.resolve("Join our growing team!", undefined)).toBeNull();
+  });
+
+  it("returns null for an unrecognized seniority value rather than guessing", () => {
+    expect(experienceRequirementService.resolve("Join our growing team!", "some-unknown-value")).toBeNull();
+  });
+});
+
 describe("ExperienceRequirementService.matches", () => {
   it("always matches when there's no extracted requirement - never excludes on missing data", () => {
     expect(experienceRequirementService.matches(null, { minYears: 2, maxYears: 4 })).toBe(true);

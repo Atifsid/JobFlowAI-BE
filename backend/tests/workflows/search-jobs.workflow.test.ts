@@ -103,6 +103,33 @@ describe("SearchJobsWorkflow.run", () => {
     );
   });
 
+  it("falls back to a seniority estimate when the JD is a short teaser with no years mentioned", async () => {
+    // Reproduces a real report: JPMC/Oracle Recruiting Cloud postings have
+    // one-sentence teaser descriptions with no years mention at all, so a
+    // "Lead"/"Principal" titled job was passing a 3-4 year search
+    // untouched when only JD text was considered.
+    const leadTeaser = {
+      id: "1",
+      seniority: "lead",
+      description: "Carry out critical tech solutions across multiple technical areas as an integral part of an agile team"
+    };
+    const midTeaser = {
+      id: "2",
+      seniority: "mid",
+      description: "Join our growing platform team and ship real features"
+    };
+    mockJobspediaSearch.mockResolvedValue({ jobs: [leadTeaser, midTeaser], total: 2 });
+    mockGreenhouseSearch.mockResolvedValue({ jobs: [], total: 0 });
+
+    const { default: workflow } = await import("../../src/workflows/search-jobs.workflow");
+    await workflow.run({ minYears: 3, maxYears: 4 });
+
+    expect(mockBuild).toHaveBeenCalledWith(
+      [{ job: midTeaser, status: JobStatus.DISCOVERED }],
+      { page: 1, limit: 20, totalMatches: 1 }
+    );
+  });
+
   it("does not filter by years when minYears/maxYears aren't provided", async () => {
     const job = { id: "1", description: "Minimum of 8 years of experience" };
     mockJobspediaSearch.mockResolvedValue({ jobs: [job], total: 1 });

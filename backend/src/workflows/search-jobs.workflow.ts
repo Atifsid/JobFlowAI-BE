@@ -29,17 +29,21 @@ class SearchJobsWorkflow implements Workflow<JobSearch, Dashboard> {
       let totalMatches = results.reduce((sum, r) => sum + r.total, 0);
 
       // Years-of-experience filtering happens here, not in any provider:
-      // it's derived from the JD body text (experience-requirement.service.ts),
-      // a more reliable signal than jobspedia's title-only seniority bucket,
-      // which defaults every unlabeled title to "mid" regardless of the
-      // years actually required. Applied after provider-side pagination, so
-      // totalMatches becomes this page's filtered count rather than a true
-      // cross-page total - an accepted simplification for a single-user,
-      // local-first tool; a provider-side filter would need jobspedia to
-      // index the same extraction itself.
+      // resolve() prefers years stated in the JD body text
+      // (experience-requirement.service.ts), falling back to a
+      // seniority-derived estimate only when the JD is silent - some
+      // sources (Oracle Recruiting Cloud/JPMC postings, observed live)
+      // carry a one-sentence teaser description that never states years
+      // at all, so relying on JD text alone let every one of those
+      // through regardless of the target range. Applied after
+      // provider-side pagination, so totalMatches becomes this page's
+      // filtered count rather than a true cross-page total - an accepted
+      // simplification for a single-user, local-first tool; a
+      // provider-side filter would need jobspedia to index the same
+      // extraction itself.
       if (search.minYears !== undefined || search.maxYears !== undefined) {
         jobs = jobs.filter(job => {
-          const requirement = experienceRequirementService.extract(job.description);
+          const requirement = experienceRequirementService.resolve(job.description, job.seniority);
           return experienceRequirementService.matches(requirement, {
             minYears: search.minYears,
             maxYears: search.maxYears
