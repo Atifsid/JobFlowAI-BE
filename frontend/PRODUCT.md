@@ -17,11 +17,15 @@ decision, not a leisurely read.
 ## Product Purpose
 
 JobFlowAI automates the mechanical parts of a job search — searching,
-matching against a master resume, tailoring, tracking, finding referral
-contacts — collapsing what used to be a 2–3hr manual workflow into
-under 2 minutes per job. The frontend is the cockpit for that pipeline:
-surface the deterministic match score and reasoning, let the user make
-a fast call, and get out of the way. Success looks like: open the
+extracting JD keywords, tailoring a resume from the single master
+resume, verifying it with a deterministic ATS check, finding referral
+contacts, tracking sent referrals — collapsing what used to be a 2–3hr
+manual workflow into under 2 minutes per job. The frontend is the
+cockpit for that pipeline: list what was found, run the pipeline on the
+jobs the user picks, surface the ATS report on the generated resume,
+and get out of the way. Jobs are never scored at search time — the only
+score in the product is the ATS keyword-coverage check of a *generated*
+resume. Success looks like: open the
 dashboard, understand the state of every job at a glance, act on it in
 one or two clicks, move on.
 
@@ -42,7 +46,7 @@ shadcn/ui's own stock black/white/gray dark theme, no custom brand hue.
 The first pass tried a warm terracotta accent; the user saw it rendered
 and asked to "follow the theme of shadcn... black and white... keep it
 minimal" instead. Color is reserved entirely for status semantics
-(success/warning/error/neutral job-decision states) — not used for
+(success/warning/error/neutral job-status/ATS states) — not used for
 primary actions, nav, or brand identity. See DESIGN.md's Color-Is-
 Function Rule.
 
@@ -60,7 +64,7 @@ Function Rule.
   doesn't mean "enterprise form density."
 - **Fabricated data.** This app has one real user and one real backend —
   never dress up the UI with sections that imply data the API doesn't
-  have (saved jobs, recommendations, a resume score endpoint, a
+  have (saved jobs, recommendations, a
   notifications/user-profile system). Ground every section in what
   `frontend/src/types/index.ts` and the backend actually return; design
   a real empty state instead of inventing content.
@@ -78,18 +82,18 @@ Function Rule.
   on. Polish should never come at the cost of scanability: hierarchy and
   density choices still serve "decide fast," they're just no longer
   expressed through bare-bones/flat-only styling.
-- **Explainable, not opaque.** Match scoring, decisions, and next actions
-  are deterministic and reasoned (see CLAUDE.md's matcher/decision
-  pipeline) — the UI should show *why* a job scored the way it did, not
-  bury it behind a black-box-style badge.
+- **Explainable, not opaque.** The ATS check of a generated resume is
+  deterministic and reasoned (see backend CLAUDE.md's ATS gate) — the UI
+  shows *why* a resume passed or needs review (matched vs missing
+  keywords, page count, dropped employers), never a black-box badge.
 - **One master resume, tailored views.** The backend has one source of
   truth (master resume) rendered differently per job; the frontend
   should mirror that — consistent presentation patterns (shared shadcn
   components, one design language) reused across pages, not bespoke
   one-off layouts per screen.
 - **Real data only.** Every section maps to an actual API field or a
-  value computed from real API data (e.g. an average score derived from
-  real per-job scores). No mock data, no hardcoded placeholder content,
+  value computed from real API data (e.g. pipeline-activity counts
+  derived from real job statuses). No mock data, no hardcoded placeholder content,
   no sections implying capabilities (auth, notifications, saved/
   recommended jobs) that don't exist in the backend.
 

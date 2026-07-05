@@ -8,7 +8,7 @@ colors:
   # instead. These are shadcn's own stock dark-mode "neutral" values
   # (oklch, chroma 0 throughout) converted to hex — no brand hue at all.
   # Status colors are the one deliberate exception, kept per explicit
-  # instruction: real semantic meaning (job decision/status), not brand
+  # instruction: real semantic meaning (job status / ATS result), not brand
   # decoration, so they stay colored while everything else goes gray.
   bg-page: "#0a0a0a"
   bg-surface: "#171717"
@@ -116,7 +116,7 @@ components:
 
 (Second revision, same day — 2026-07-05. The "Premium SaaS cockpit" direction above kept a warm terracotta brand accent; the user looked at the rendered result, didn't like it, and asked to "follow the theme of shadcn... black and white... keep it minimal" instead. This supersedes the warm-accent direction — no brand hue anywhere now.)
 
-JobFlowAI's UI is literally shadcn/ui's own stock dark "neutral" theme: near-black background, near-white foreground, grayscale surfaces, a light-gray/white primary (shadcn's standard dark-mode convention — an inverted, near-white button rather than a colored one). The only color left in the entire system is functional: the four status tones (success/warning/error/neutral) that carry real job-decision/status meaning. Nothing is colored for brand or decoration.
+JobFlowAI's UI is literally shadcn/ui's own stock dark "neutral" theme: near-black background, near-white foreground, grayscale surfaces, a light-gray/white primary (shadcn's standard dark-mode convention — an inverted, near-white button rather than a colored one). The only color left in the entire system is functional: the four status tones (success/warning/error/neutral) that carry real job-status/ATS meaning. Nothing is colored for brand or decoration.
 
 Still explicitly rejected: templated AI-generated SaaS clichés (purple gradients, glassmorphism-as-default, gradient text, tiny uppercase tracked eyebrows on every section, the literal big-number-plus-gradient-accent hero-metric template) and corporate ATS sterility (Workday/Greenhouse-style dense enterprise forms).
 
@@ -147,11 +147,11 @@ A near-black, near-white grayscale system with a restrained semantic set for sta
 ### Status (semantic, not decorative — the only color in the system)
 - **Signal Green** (`#10b981`): Success state — matched skills, `DIRECT_APPLY`/`REFERRAL`-leaning signals.
 - **Signal Amber** (`#f59e0b`): Warning state — borderline scores, pending states.
-- **Signal Red** (`#ff6467`): Error state — failed requests, `SKIP` decisions.
+- **Signal Red** (`#ff6467`): Error state — failed requests, skipped/rejected statuses.
 - **Signal Gray** (`#a1a1a1`): Neutral/inactive state — default badge tone when nothing else applies. (Same value as Muted Text — both are "no particular signal", so sharing the token is intentional, not an oversight.)
 
 ### Named Rules
-**The Color-Is-Function Rule.** No hue exists in this system except the four status tones, and each marks a real job-decision/status meaning — never decoration, never a "brand" color. Primary/nav/focus states are grayscale (light-on-dark inversion), not colored.
+**The Color-Is-Function Rule.** No hue exists in this system except the four status tones, and each marks a real job-status/ATS meaning — never decoration, never a "brand" color. Primary/nav/focus states are grayscale (light-on-dark inversion), not colored.
 
 ## 3. Typography
 
@@ -195,7 +195,7 @@ Every control should feel considered and responsive: clear, legible state change
 
 ### Badges (Chips)
 - **Style:** Pill shape (999px radius), 15%-opacity tint of the status color as background, full-opacity status color as text, 12px/500 weight.
-- **State:** Four tones only — success, warning, error, neutral — mapped directly to match/decision semantics (matched skill, borderline, skipped, default). Never used decoratively.
+- **State:** Four tones only — success, warning, error, neutral — mapped directly to status/ATS semantics (matched keyword, needs review, skipped, default). Never used decoratively.
 
 ### Cards / Containers
 - **Corner Style:** 6px radius (`--radius-card`) — slightly softer than buttons, still understated.
@@ -218,14 +218,14 @@ Every control should feel considered and responsive: clear, legible state change
 - **Header:** Sticky single-row bar, `border-bottom` 1px `border-color`. Contains just the sidebar trigger and a route-derived breadcrumb trail. (A ⌘K command palette for jumping to tracked jobs was tried and removed 2026-07-05 — searching from an already-tracked-jobs context didn't earn its place in the header.) No user profile dropdown, no notification bell — no backing auth/notifications API.
 
 ### Score Ring (signature component)
-The SVG score circle is the system's one custom instrument: a ring track in Hover, filled proportionally in Primary with a rounded stroke cap, numeric score centered in Foreground Display-weight text. It should stay the only circular/radial data element in the system so it keeps its authority as the one signature gauge.
+The SVG score circle is the system's one custom instrument — it displays the ATS keyword-coverage score of a generated resume (the product's only score): a ring track in Hover, filled proportionally in Primary with a rounded stroke cap, numeric score centered in Foreground Display-weight text. It should stay the only circular/radial data element in the system so it keeps its authority as the one signature gauge.
 
 ## 6. Do's and Don'ts
 
 ### Do:
 - **Do** keep Primary (`#e5e5e5`) to one purpose per screen — the primary action or the thing currently in focus. Everything else stays neutral.
 - **Do** use borders (`1px solid #262626`) as the primary depth/separation cue, on Panel (`#171717`) over Near-black (`#0a0a0a`).
-- **Do** keep all four status colors (green/amber/red/gray) mapped strictly to match/decision semantics — never decorative.
+- **Do** keep all four status colors (green/amber/red/gray) mapped strictly to status/ATS semantics — never decorative.
 - **Do** keep every screen scannable in seconds: stat readouts, tables, and the score ring over narrative copy or long-form explanation.
 - **Do** use the single system-sans stack for everything; differentiate purely by size, weight, and color-muting.
 
@@ -236,4 +236,4 @@ The SVG score circle is the system's one custom instrument: a ring track in Hove
 - **Don't** use `border-left`/`border-right` as a colored accent stripe on cards or list items. If something needs to stand out, use the badge/tint vocabulary or the accent color directly, not a stripe.
 - **Don't** add a second typeface or a monospace variant "for a technical feel" — the One Family Rule holds; hierarchy comes from size/weight/color only.
 - **Don't** use Primary for more than one element's worth of signal per screen — if two things are both accent-colored, one of them is wrong.
-- **Don't** invent UI for capabilities the backend doesn't have (auth/profile, notifications, saved/recommended jobs, a resume-score endpoint) — ground every section in real data (see PRODUCT.md's Anti-references).
+- **Don't** invent UI for capabilities the backend doesn't have (auth/profile, notifications, saved/recommended jobs) — ground every section in real data (see PRODUCT.md's Anti-references).
