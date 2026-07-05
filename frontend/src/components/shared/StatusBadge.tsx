@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { BadgeTone } from "@/components/common/Badge";
+
+export type BadgeTone = "success" | "warning" | "error" | "neutral";
 
 const TONE_CLASSES: Record<BadgeTone, string> = {
   success: "bg-[color-mix(in_srgb,var(--success)_15%,transparent)] text-[var(--success)]",

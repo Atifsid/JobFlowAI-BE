@@ -1,4 +1,4 @@
-import type { BadgeTone } from "../components/common/Badge";
+import type { BadgeTone } from "../components/shared/StatusBadge";
 import type { Job, JobAction, JobDecision, JobStatus } from "../types";
 
 export const ALL_STATUSES: JobStatus[] = [

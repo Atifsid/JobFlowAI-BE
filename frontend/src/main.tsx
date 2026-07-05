@@ -4,7 +4,6 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./styles/dark-theme.css";
 import "./styles/globals.css";
-import "./styles/responsive.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
