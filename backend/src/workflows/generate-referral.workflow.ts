@@ -1,6 +1,7 @@
 import cache from "../services/jobs/job-cache.service";
 import employeeService from "../services/employees/employee.service";
 import referralService from "../services/referrals/referral.service";
+import { JobStatus } from "../models/job-status.model";
 
 class GenerateReferralWorkflow {
   async run(jobId: string) {
@@ -21,6 +22,11 @@ class GenerateReferralWorkflow {
         )
       }))
     );
+
+    // Drafts exist for real people at this company - the job is now
+    // referral-ready. Forward-only, so an already-sent referral or an
+    // applied job is never demoted by a re-run.
+    await cache.advanceStatus(jobId, JobStatus.REFERRAL_READY);
 
     return messages;
   }

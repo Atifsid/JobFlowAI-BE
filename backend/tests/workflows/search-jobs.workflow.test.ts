@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { JobStatus } from "../../src/models/job-status.model";
 
-const { mockJobspediaSearch, mockGreenhouseSearch, mockRunMany, mockBuild, mockSave } = vi.hoisted(() => ({
+const { mockJobspediaSearch, mockGreenhouseSearch, mockBuild, mockSave, mockGetPipeline } = vi.hoisted(() => ({
   mockJobspediaSearch: vi.fn(),
   mockGreenhouseSearch: vi.fn(),
-  mockRunMany: vi.fn(),
   mockBuild: vi.fn(),
-  mockSave: vi.fn()
+  mockSave: vi.fn(),
+  mockGetPipeline: vi.fn()
 }));
 
 vi.mock("../../src/services/jobs/providers/jobspedia/jobspedia.service", () => ({
@@ -14,46 +15,43 @@ vi.mock("../../src/services/jobs/providers/jobspedia/jobspedia.service", () => (
 vi.mock("../../src/services/jobs/providers/greenhouse/greenhouse.service", () => ({
   default: { search: mockGreenhouseSearch }
 }));
-vi.mock("../../src/services/jobs/job-pipeline.service", () => ({
-  default: { runMany: mockRunMany }
-}));
 vi.mock("../../src/services/dashboard/dashboard.service", () => ({
   default: { build: mockBuild }
 }));
 vi.mock("../../src/services/jobs/job-cache.service", () => ({
-  default: { save: mockSave }
+  default: { save: mockSave, getPipeline: mockGetPipeline }
 }));
 
 describe("SearchJobsWorkflow.run", () => {
   beforeEach(() => {
     mockJobspediaSearch.mockReset();
     mockGreenhouseSearch.mockReset();
-    mockRunMany.mockReset().mockResolvedValue([]);
-    mockBuild.mockReset().mockReturnValue({ total: 0, referral: 0, directApply: 0, skip: 0, jobs: [] });
+    mockBuild.mockReset().mockReturnValue({ total: 0, resumesGenerated: 0, referralsReady: 0, applied: 0, jobs: [] });
     mockSave.mockReset();
+    mockGetPipeline.mockReset().mockResolvedValue(null);
   });
 
-  it("scores every job found (no Sheets dedup - search never calls Google APIs)", async () => {
+  it("caches each found job as DISCOVERED without any scoring or Google API calls", async () => {
     const job = { id: "1" };
     mockJobspediaSearch.mockResolvedValue({ jobs: [job], total: 37 });
     mockGreenhouseSearch.mockResolvedValue({ jobs: [], total: 0 });
 
     const { default: workflow } = await import("../../src/workflows/search-jobs.workflow");
-    await workflow.run({ title: "Engineer", page: 2, limit: 10 });
+    await workflow.run({ title: "Engineer" });
 
-    expect(mockRunMany).toHaveBeenCalledWith([job]);
+    expect(mockSave).toHaveBeenCalledWith({ job, status: JobStatus.DISCOVERED });
   });
 
-  it("caches every scored pipeline item for later per-job lookups", async () => {
-    mockJobspediaSearch.mockResolvedValue({ jobs: [{ id: "1" }], total: 1 });
+  it("preserves the existing status when a cached job re-surfaces in a new search", async () => {
+    const job = { id: "1" };
+    mockJobspediaSearch.mockResolvedValue({ jobs: [job], total: 1 });
     mockGreenhouseSearch.mockResolvedValue({ jobs: [], total: 0 });
-    const pipelineItem = { job: { id: "1" }, score: { score: 80 }, decision: "DIRECT_APPLY", actions: [], status: "ANALYZED" };
-    mockRunMany.mockResolvedValue([pipelineItem]);
+    mockGetPipeline.mockResolvedValue({ job, status: JobStatus.REFERRAL_READY });
 
     const { default: workflow } = await import("../../src/workflows/search-jobs.workflow");
     await workflow.run({});
 
-    expect(mockSave).toHaveBeenCalledWith(pipelineItem);
+    expect(mockSave).toHaveBeenCalledWith({ job, status: JobStatus.REFERRAL_READY });
   });
 
   it("sums total across providers and passes page/limit/totalMatches to dashboardService.build", async () => {
@@ -64,7 +62,7 @@ describe("SearchJobsWorkflow.run", () => {
     await workflow.run({ title: "Engineer", page: 2, limit: 10 });
 
     expect(mockBuild).toHaveBeenCalledWith(
-      [],
+      [{ job: { id: "1" }, status: JobStatus.DISCOVERED }],
       { page: 2, limit: 10, totalMatches: 37 }
     );
   });

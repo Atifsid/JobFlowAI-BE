@@ -3,6 +3,7 @@ import tailor from "../services/resume/resume-tailor.service";
 import driveService from "../services/drive/drive.service";
 import sheetsService from "../services/sheets/sheets.service";
 import { toSheetRow } from "../services/sheets/job-record.mapper";
+import { JobStatus } from "../models/job-status.model";
 import { env } from "../config/env";
 
 class ResumeWorkflow {
@@ -19,6 +20,10 @@ class ResumeWorkflow {
       const fileName = pdfPath.split("/").pop() as string;
       driveLink = await driveService.upload(pdfPath, fileName);
     }
+
+    // Advance before the Sheets upsert below so the row reflects the new
+    // status. Forward-only: a re-run on a further-along job is a no-op.
+    await cache.advanceStatus(jobId, JobStatus.RESUME_GENERATED);
 
     // Sheets tracking happens here - the first step of the per-job pipeline the
     // user explicitly runs on their selected (up to 5) jobs - rather than during

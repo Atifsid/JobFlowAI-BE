@@ -27,10 +27,7 @@ const pipeline: JobPipeline = {
     applyUrl: "https://example.com",
     source: "test"
   },
-  score: { score: 80, missingSkills: [], strengths: [], weaknesses: [], recommendation: "Apply" },
-  decision: "DIRECT_APPLY",
-  actions: [],
-  status: JobStatus.ANALYZED
+  status: JobStatus.DISCOVERED
 };
 
 describe("JobCacheService", () => {
@@ -73,7 +70,7 @@ describe("JobCacheService", () => {
     expect(result).toEqual([pipeline]);
   });
 
-  it("getAll() filters out old-format entries missing job/score, keeping well-formed pipelines", async () => {
+  it("getAll() filters out malformed entries missing a job", async () => {
     const malformed = { id: "job-2", title: "Old Format Job" };
     mockReadAll.mockResolvedValue([pipeline, malformed]);
 
@@ -82,13 +79,28 @@ describe("JobCacheService", () => {
     expect(result).toEqual([pipeline]);
   });
 
-  it("getPipeline() returns the full cached pipeline by id", async () => {
-    mockRead.mockResolvedValue(pipeline);
+  it("normalizes legacy entries: strips score/decision/actions and maps the retired ANALYZED status to DISCOVERED", async () => {
+    const legacy = {
+      job: pipeline.job,
+      score: { score: 80 },
+      decision: "DIRECT_APPLY",
+      actions: ["GENERATE_RESUME"],
+      status: "ANALYZED"
+    };
+    mockRead.mockResolvedValue(legacy);
 
     const result = await jobCacheService.getPipeline("job-1");
 
-    expect(mockRead).toHaveBeenCalledWith("jobs", "job-1.json");
-    expect(result).toEqual(pipeline);
+    expect(result).toEqual({ job: pipeline.job, status: JobStatus.DISCOVERED });
+  });
+
+  it("keeps a legacy entry's valid status while stripping the dead fields", async () => {
+    const legacy = { job: pipeline.job, decision: "REFERRAL", status: "REFERRAL_READY" };
+    mockRead.mockResolvedValue(legacy);
+
+    const result = await jobCacheService.getPipeline("job-1");
+
+    expect(result).toEqual({ job: pipeline.job, status: JobStatus.REFERRAL_READY });
   });
 
   it("getPipeline() returns null when nothing is cached", async () => {
@@ -97,5 +109,45 @@ describe("JobCacheService", () => {
     const result = await jobCacheService.getPipeline("missing");
 
     expect(result).toBeNull();
+  });
+
+  describe("advanceStatus()", () => {
+    it("moves the status forward", async () => {
+      mockRead.mockResolvedValue({ ...pipeline, status: JobStatus.DISCOVERED });
+
+      await jobCacheService.advanceStatus("job-1", JobStatus.RESUME_GENERATED);
+
+      expect(mockWrite).toHaveBeenCalledWith("jobs", "job-1.json", {
+        job: pipeline.job,
+        status: JobStatus.RESUME_GENERATED
+      });
+    });
+
+    it("never moves the status backward", async () => {
+      mockRead.mockResolvedValue({ ...pipeline, status: JobStatus.REFERRAL_SENT });
+
+      await jobCacheService.advanceStatus("job-1", JobStatus.RESUME_GENERATED);
+
+      expect(mockWrite).not.toHaveBeenCalled();
+    });
+
+    it("revives a SKIPPED job when the pipeline is explicitly re-run on it", async () => {
+      mockRead.mockResolvedValue({ ...pipeline, status: JobStatus.SKIPPED });
+
+      await jobCacheService.advanceStatus("job-1", JobStatus.RESUME_GENERATED);
+
+      expect(mockWrite).toHaveBeenCalledWith("jobs", "job-1.json", {
+        job: pipeline.job,
+        status: JobStatus.RESUME_GENERATED
+      });
+    });
+
+    it("does nothing when the job isn't cached", async () => {
+      mockRead.mockResolvedValue(null);
+
+      await jobCacheService.advanceStatus("missing", JobStatus.RESUME_GENERATED);
+
+      expect(mockWrite).not.toHaveBeenCalled();
+    });
   });
 });

@@ -30,10 +30,7 @@ const pipeline: JobPipeline = {
     applyUrl: "https://example.com",
     source: "test"
   },
-  score: { score: 80, missingSkills: [], strengths: [], weaknesses: [], recommendation: "Apply" },
-  decision: "DIRECT_APPLY",
-  actions: [],
-  status: JobStatus.ANALYZED
+  status: JobStatus.DISCOVERED
 };
 
 describe("UpdateJobStatusWorkflow", () => {

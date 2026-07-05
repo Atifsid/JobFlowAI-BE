@@ -5,8 +5,6 @@ export const toSheetRow = (job: JobPipeline) => [
   job.job.company,
   job.job.title,
   job.job.location,
-  job.score.score,
-  job.decision,
   job.status,
   job.job.applyUrl,
   job.job.companyUrl ?? "",

@@ -1,15 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { JobStatus } from "../../src/models/job-status.model";
 
-const { mockGet, mockGetPipeline, mockGenerate, mockUpload, mockUpsert } = vi.hoisted(() => ({
+const { mockGet, mockGetPipeline, mockAdvanceStatus, mockGenerate, mockUpload, mockUpsert } = vi.hoisted(() => ({
   mockGet: vi.fn(),
   mockGetPipeline: vi.fn(),
+  mockAdvanceStatus: vi.fn(),
   mockGenerate: vi.fn(),
   mockUpload: vi.fn(),
   mockUpsert: vi.fn()
 }));
 
 vi.mock("../../src/services/jobs/job-cache.service", () => ({
-  default: { get: mockGet, getPipeline: mockGetPipeline }
+  default: { get: mockGet, getPipeline: mockGetPipeline, advanceStatus: mockAdvanceStatus }
 }));
 vi.mock("../../src/services/resume/resume-tailor.service", () => ({
   default: { generate: mockGenerate }
@@ -22,13 +24,14 @@ vi.mock("../../src/services/sheets/sheets.service", () => ({
 }));
 
 const job = { id: "job-1", title: "Engineer", company: "Acme", location: "NYC", remote: false, description: "", skills: [], applyUrl: "https://x.com", source: "test" };
-const pipeline = { job, score: { score: 80, missingSkills: [], strengths: [], weaknesses: [], recommendation: "" }, decision: "DIRECT_APPLY", actions: [], status: "ANALYZED" };
+const pipeline = { job, status: JobStatus.RESUME_GENERATED };
 
 describe("ResumeWorkflow.run", () => {
   beforeEach(() => {
     vi.resetModules();
     mockGet.mockReset().mockResolvedValue(job);
     mockGetPipeline.mockReset().mockResolvedValue(pipeline);
+    mockAdvanceStatus.mockReset();
     mockGenerate.mockReset().mockResolvedValue({ pdfPath: "storage/resumes/generated/a.pdf" });
     mockUpload.mockReset().mockResolvedValue("https://drive.example/a");
     mockUpsert.mockReset();
@@ -38,6 +41,15 @@ describe("ResumeWorkflow.run", () => {
     mockGet.mockResolvedValue(null);
     const { default: workflow } = await import("../../src/workflows/resume.workflow");
     await expect(workflow.run("missing")).rejects.toThrow("Job not found.");
+  });
+
+  it("advances the job's status to RESUME_GENERATED after generating", async () => {
+    vi.doMock("../../src/config/env", () => ({ env: { DRIVE_UPLOAD_ENABLED: false, GOOGLE_SHEET_ID: "" } }));
+    const { default: workflow } = await import("../../src/workflows/resume.workflow");
+
+    await workflow.run("job-1");
+
+    expect(mockAdvanceStatus).toHaveBeenCalledWith("job-1", JobStatus.RESUME_GENERATED);
   });
 
   it("writes a Sheets row for the job when GOOGLE_SHEET_ID is configured", async () => {

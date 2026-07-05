@@ -22,13 +22,13 @@ describe("GET /api/dashboard", () => {
 
   it("returns the dashboard built from every cached job, without re-running search", async () => {
     mockGetAll.mockResolvedValue([{ job: { id: "1" } }]);
-    mockBuild.mockReturnValue({ total: 1, referral: 0, directApply: 1, skip: 0, jobs: [] });
+    mockBuild.mockReturnValue({ total: 1, resumesGenerated: 1, referralsReady: 0, applied: 0, jobs: [] });
 
     const { default: app } = await import("../../src/app");
     const res = await request(app).get("/api/dashboard");
 
     expect(res.status).toBe(200);
-    expect(res.body.data).toEqual({ total: 1, referral: 0, directApply: 1, skip: 0, jobs: [] });
+    expect(res.body.data).toEqual({ total: 1, resumesGenerated: 1, referralsReady: 0, applied: 0, jobs: [] });
     expect(mockGetAll).toHaveBeenCalled();
   });
 });

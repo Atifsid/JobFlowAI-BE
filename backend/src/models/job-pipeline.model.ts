@@ -1,13 +1,12 @@
 import { Job } from "./job.model";
-import { ResumeScore } from "./resume-score.model";
-import { JobDecision } from "./job-decision.model";
-import { JobAction } from "./job-action.model";
 import { JobStatus } from "./job-status.model";
 
+// The per-job record persisted in the local cache and rendered by the
+// frontend. Search stores just the job + a status; pipeline runs (resume
+// generation, referral drafting) advance the status. No fit-scoring
+// happens at fetch time - the master resume is a content pool, not
+// something to grade jobs against.
 export interface JobPipeline {
   job: Job;
-  score: ResumeScore;
-  decision: JobDecision;
-  actions: JobAction[];
   status: JobStatus;
 }
