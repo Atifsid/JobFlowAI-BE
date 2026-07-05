@@ -196,6 +196,20 @@ describe("ResumeAIService", () => {
     expect(result).toBe("**HRMS** — React Native\n- Built stuff.");
   });
 
+  it("strips a leading section-name label with the colon inside the bold markers", async () => {
+    // Observed live: the model wrote "**Projects:**" - colon INSIDE the
+    // bold markers rather than after them - which the original regex
+    // (only anticipating "**Projects**:" or "Projects:") didn't match,
+    // so the label rendered as a stray line in the final PDF.
+    mockTailorProjects.mockResolvedValue(
+      "**Projects:**\n\n**HRMS** — React Native\n- Built stuff."
+    );
+
+    const result = await resumeAIService.tailorProjects("JobFlowAI", ["React"]);
+
+    expect(result).toBe("**HRMS** — React Native\n- Built stuff.");
+  });
+
   it("throws when a section comes back empty after stripping the overflow marker", async () => {
     // Observed live: the model returned ONLY "OVERFLOW WARNING:" - left
     // unchecked this renders a resume with a silently missing section.

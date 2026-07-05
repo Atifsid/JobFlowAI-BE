@@ -5,11 +5,18 @@
 // model already ordered by relevance), and if the render still overflows
 // one page, remove one bullet at a time until it fits. No AI calls here.
 
-const MAX_SKILL_LINES = 6;
-const MAX_BULLETS_PER_ROLE = 3;
-const MAX_TOTAL_BULLETS = 12;
-const MAX_PROJECTS = 2;
-const MAX_BULLETS_PER_PROJECT = 2;
+// These are upper bounds on the AI's initial selection only, not the real
+// one-page constraint - both the trim loop (resume-tailor.service.ts) and
+// growOneStep below re-render and measure actual PDF page count, so an
+// overly conservative ceiling here just leaves the page under-filled
+// without buying any real safety. Sized to comfortably cover a master
+// resume with ~7 skill lines / ~7 bullets per role / ~4-7 projects; real
+// page-fit measurement is what actually prevents overflow.
+const MAX_SKILL_LINES = 7;
+const MAX_BULLETS_PER_ROLE = 5;
+const MAX_TOTAL_BULLETS = 20;
+const MAX_PROJECTS = 4;
+const MAX_BULLETS_PER_PROJECT = 3;
 
 export interface ResumeSections {
   skills: string;

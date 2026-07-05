@@ -119,10 +119,13 @@ class ResumeAIService {
   }
 
   // Models sometimes open with the section's own name as a label
-  // ("Projects:") despite "return only the section text" - rendered,
-  // that duplicates the section heading. Strip it deterministically.
+  // ("Projects:", "**Projects**:", or - observed live - "**Projects:**"
+  // with the colon INSIDE the bold markers) despite "return only the
+  // section text" - rendered, that duplicates the section heading. The
+  // bold/colon ordering varies, so both sides of the section name accept
+  // either marker in either order rather than assuming one fixed layout.
   private stripSectionLabel(text: string, section: string): string {
-    return text.replace(new RegExp(`^(?:\\*\\*)?${section}(?:\\*\\*)?:?\\s*\\n`, "i"), "").trim();
+    return text.replace(new RegExp(`^\\*{0,2}${section}\\*{0,2}:?\\*{0,2}\\s*\\n`, "i"), "").trim();
   }
 
   // Observed live: a local model once returned ONLY the overflow marker,

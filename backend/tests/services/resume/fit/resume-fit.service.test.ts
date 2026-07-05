@@ -8,41 +8,46 @@ const project = (name: string, bullets: number) =>
   [`**${name}** — React`, ...Array.from({ length: bullets }, (_, i) => `- ${name} bullet ${i + 1}`)].join("\n");
 
 describe("ResumeFitService.enforceBudgets", () => {
-  it("caps skills at 6 lines, bullets at 3/role and 12 total, projects at 2x2", () => {
+  it("caps skills at 7 lines, bullets at 5/role and 20 total, projects at 4x3", () => {
     const sections = resumeFitService.enforceBudgets({
-      skills: Array.from({ length: 8 }, (_, i) => `Category ${i}: things`).join("\n"),
-      experience: [role("A", 5), role("B", 5), role("C", 5), role("D", 5)].join("\n\n"),
-      projects: [project("P1", 3), project("P2", 3), project("P3", 3)].join("\n\n")
+      skills: Array.from({ length: 9 }, (_, i) => `Category ${i}: things`).join("\n"),
+      experience: [role("A", 6), role("B", 6), role("C", 6), role("D", 6)].join("\n\n"),
+      projects: [project("P1", 4), project("P2", 4), project("P3", 4), project("P4", 4), project("P5", 4)].join(
+        "\n\n"
+      )
     });
 
-    expect(sections.skills.split("\n")).toHaveLength(6);
-    expect(sections.experience.match(/^- /gm)).toHaveLength(12);
-    // Every role survives, each with at most 3 bullets.
+    expect(sections.skills.split("\n")).toHaveLength(7);
+    expect(sections.experience.match(/^- /gm)).toHaveLength(20);
+    // Every role survives, each with at most 5 bullets.
     expect(sections.experience.match(/^\*\*/gm)).toHaveLength(4);
-    expect(sections.projects.match(/^\*\*/gm)).toHaveLength(2);
-    expect(sections.projects.match(/^- /gm)).toHaveLength(4);
+    expect(sections.projects.match(/^\*\*/gm)).toHaveLength(4);
+    expect(sections.projects.match(/^- /gm)).toHaveLength(12);
   });
 
   it("shaves the total-bullet overage from the oldest (last-listed) role first", () => {
     const sections = resumeFitService.enforceBudgets({
       skills: "Languages: things",
-      experience: [role("Newest", 3), role("Mid", 3), role("Mid2", 3), role("Oldest", 3)].join("\n\n"),
+      experience: [role("Newest", 5), role("Mid", 5), role("Mid2", 5), role("Oldest", 5)].join("\n\n"),
       projects: project("P1", 1)
     });
 
-    // 4 roles x 3 = 12, already at budget - all keep 3.
-    expect(sections.experience.match(/^- /gm)).toHaveLength(12);
+    // 4 roles x 5 = 20, already at budget - all keep 5.
+    expect(sections.experience.match(/^- /gm)).toHaveLength(20);
 
     const five = resumeFitService.enforceBudgets({
       skills: "Languages: things",
-      experience: [role("Newest", 3), role("Mid", 3), role("Mid2", 3), role("Old", 3), role("Oldest", 3)].join("\n\n"),
+      experience: [role("Newest", 5), role("Mid", 5), role("Mid2", 5), role("Old", 5), role("Oldest", 5)].join(
+        "\n\n"
+      ),
       projects: project("P1", 1)
     });
 
-    // 5 roles x 3 = 15 -> 12: Oldest loses 2 (down to 1), Old loses 1.
-    expect(five.experience.match(/^- /gm)).toHaveLength(12);
+    // 5 roles x 5 = 25 -> 20: Oldest loses 4 (down to 1), Old loses 1.
+    expect(five.experience.match(/^- /gm)).toHaveLength(20);
     expect(five.experience.split("**Oldest**")[1].match(/^- /gm)).toHaveLength(1);
-    expect(five.experience.split("**Newest**")[1].split("**Mid**")[0].match(/- /g)).toHaveLength(3);
+    expect(five.experience.split("**Old**")[1].split("**Oldest**")[0].match(/^- /gm)).toHaveLength(4);
+    expect(five.experience.split("**Newest**")[1].split("**Mid**")[0].match(/- /g)).toHaveLength(5);
   });
 });
 
@@ -94,12 +99,12 @@ describe("ResumeFitService.growOneStep", () => {
   it("restores skill lines once experience bullets are already at the per-role cap", () => {
     const master = {
       skills: ["L1: a", "L2: b", "L3: c"].join("\n"),
-      experience: role("New", 3),
+      experience: role("New", 5),
       projects: project("P1", 1)
     };
     const tailored = {
       skills: "L1: a",
-      experience: role("New", 3),
+      experience: role("New", 5),
       projects: project("P1", 1)
     };
 
@@ -109,20 +114,23 @@ describe("ResumeFitService.growOneStep", () => {
   });
 
   it("restores project bullets, then adds a whole unused project, once skills and experience are maxed", () => {
-    const maxedSkills = Array.from({ length: 6 }, (_, i) => `L${i}: x`).join("\n");
+    const maxedSkills = Array.from({ length: 7 }, (_, i) => `L${i}: x`).join("\n");
     const master = {
       skills: maxedSkills,
-      experience: role("New", 3),
-      projects: [project("P1", 2), project("P2", 2)].join("\n\n")
+      experience: role("New", 5),
+      projects: [project("P1", 3), project("P2", 3)].join("\n\n")
     };
     const tailored = {
       skills: maxedSkills,
-      experience: role("New", 3),
+      experience: role("New", 5),
       projects: project("P1", 1)
     };
 
     let grown = resumeFitService.growOneStep(tailored, master)!;
     expect(grown.projects.match(/^- /gm)).toHaveLength(2); // P1's 2nd bullet restored
+
+    grown = resumeFitService.growOneStep(grown, master)!;
+    expect(grown.projects.match(/^- /gm)).toHaveLength(3); // P1's 3rd bullet restored
 
     grown = resumeFitService.growOneStep(grown, master)!;
     expect(grown.projects.match(/^\*\*/gm)).toHaveLength(2); // P2 added
