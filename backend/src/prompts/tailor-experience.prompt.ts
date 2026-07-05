@@ -2,7 +2,8 @@ import { AIMessage } from "../services/ai/ai.types";
 
 export const buildTailorExperiencePrompt = (
   experience: string,
-  keywords: string[]
+  keywords: string[],
+  feedback?: string
 ): AIMessage[] => [
   {
     role: "system",
@@ -33,6 +34,10 @@ Rules:
   },
   {
     role: "user",
-    content: `Full Master Experience:\n${experience}\n\nTarget keywords from the job description:\n${keywords.join(", ")}`
+    content: `Full Master Experience:\n${experience}\n\nTarget keywords from the job description:\n${keywords.join(", ")}${
+      feedback
+        ? `\n\nYour previous attempt failed these checks - fix them this time:\n${feedback}`
+        : ""
+    }`
   }
 ];

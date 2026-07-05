@@ -9,7 +9,9 @@ const {
   mockTailorSkills,
   mockTailorExperience,
   mockTailorProjects,
-  mockExtractKeywords
+  mockExtractKeywords,
+  mockEvaluate,
+  mockWarn
 } = vi.hoisted(() => ({
   mockGetMasterResume: vi.fn(),
   mockSave: vi.fn(),
@@ -19,7 +21,9 @@ const {
   mockTailorSkills: vi.fn(),
   mockTailorExperience: vi.fn(),
   mockTailorProjects: vi.fn(),
-  mockExtractKeywords: vi.fn()
+  mockExtractKeywords: vi.fn(),
+  mockEvaluate: vi.fn(),
+  mockWarn: vi.fn()
 }));
 
 vi.mock("../../../src/services/resume/resume.service", () => ({
@@ -43,6 +47,14 @@ vi.mock("../../../src/services/resume/ai/resume-ai.service", () => ({
   }
 }));
 
+vi.mock("../../../src/services/resume/ats/ats-check.service", () => ({
+  default: { evaluate: mockEvaluate }
+}));
+
+vi.mock("../../../src/config/logger", () => ({
+  default: { warn: mockWarn }
+}));
+
 import resumeTailorService from "../../../src/services/resume/resume-tailor.service";
 import { Job } from "../../../src/models/job.model";
 
@@ -58,58 +70,89 @@ const job: Job = {
   source: "test"
 };
 
+const passingReport = {
+  score: 90,
+  matchedKeywords: ["React", "AWS"],
+  missingKeywords: [],
+  pages: 1,
+  missingEmployers: [],
+  passed: true
+};
+
 describe("ResumeTailorService.generate", () => {
   beforeEach(() => {
-    mockGetMasterResume.mockReset();
-    mockSave.mockReset();
-    mockExtract.mockReset();
-    mockReplace.mockReset();
-    mockRender.mockReset();
-    mockTailorSkills.mockReset();
-    mockTailorExperience.mockReset();
-    mockTailorProjects.mockReset();
-    mockExtractKeywords.mockReset();
-  });
-
-  it("extracts and tailors each section, renders the pdf, and saves it", async () => {
-    const master = "# master resume";
-    const pdf = Buffer.from("pdf-bytes");
-
-    mockGetMasterResume.mockResolvedValue(master);
-    mockExtractKeywords.mockResolvedValue(["React", "AWS"]);
-    mockExtract.mockImplementation((_md: string, section: string) => `${section}-original`);
-    mockTailorSkills.mockResolvedValue("skills!");
-    mockTailorExperience.mockResolvedValue("experience!");
-    mockTailorProjects.mockResolvedValue("projects!");
-    mockReplace.mockImplementation(
+    mockGetMasterResume.mockReset().mockResolvedValue("# master resume");
+    mockSave.mockReset().mockResolvedValue("storage/resumes/generated/acme-software-engineer.pdf");
+    mockExtract.mockReset().mockImplementation((_md: string, section: string) => `${section}-original`);
+    mockReplace.mockReset().mockImplementation(
       (md: string, section: string, content: string) => `${md}+${section}:${content}`
     );
-    mockRender.mockResolvedValue(pdf);
-    mockSave.mockResolvedValue("storage/resumes/generated/acme-software-engineer.pdf");
+    mockRender.mockReset().mockResolvedValue(Buffer.from("pdf-bytes"));
+    mockTailorSkills.mockReset().mockResolvedValue("skills!");
+    mockTailorExperience.mockReset().mockResolvedValue("experience!");
+    mockTailorProjects.mockReset().mockResolvedValue("projects!");
+    mockExtractKeywords.mockReset().mockResolvedValue(["React", "AWS"]);
+    mockEvaluate.mockReset().mockReturnValue(passingReport);
+    mockWarn.mockReset();
+  });
+
+  it("extracts keywords, tailors each section with them, renders, gates, and saves", async () => {
+    const result = await resumeTailorService.generate(job);
+
+    expect(mockExtractKeywords).toHaveBeenCalledWith("job description");
+    expect(mockTailorSkills).toHaveBeenCalledWith("Skills-original", ["React", "AWS"], undefined);
+    expect(mockTailorExperience).toHaveBeenCalledWith("Experience-original", ["React", "AWS"], undefined);
+    expect(mockTailorProjects).toHaveBeenCalledWith("Projects-original", ["React", "AWS"], undefined);
+    expect(mockRender).toHaveBeenCalledWith(
+      "# master resume+Skills:skills!+Experience:experience!+Projects:projects!"
+    );
+    expect(mockEvaluate).toHaveBeenCalledWith({
+      markdown: "# master resume+Skills:skills!+Experience:experience!+Projects:projects!",
+      pdf: Buffer.from("pdf-bytes"),
+      keywords: ["React", "AWS"],
+      masterExperience: "Experience-original",
+      tailoredExperience: "experience!"
+    });
+    expect(mockSave).toHaveBeenCalledWith("Acme", "Software Engineer", Buffer.from("pdf-bytes"));
+    expect(result).toEqual({
+      pdfPath: "storage/resumes/generated/acme-software-engineer.pdf",
+      keywords: ["React", "AWS"],
+      ats: passingReport
+    });
+    // Gate passed first try - no retry.
+    expect(mockTailorSkills).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries once with concrete feedback when the ATS gate fails", async () => {
+    const failingReport = {
+      score: 50,
+      matchedKeywords: ["React"],
+      missingKeywords: ["AWS"],
+      pages: 2,
+      missingEmployers: ["Beta Inc"],
+      passed: false
+    };
+    mockEvaluate.mockReturnValueOnce(failingReport).mockReturnValueOnce(passingReport);
 
     const result = await resumeTailorService.generate(job);
 
-    expect(mockExtract).toHaveBeenCalledWith(master, "Skills");
-    expect(mockExtract).toHaveBeenCalledWith(master, "Experience");
-    expect(mockExtract).toHaveBeenCalledWith(master, "Projects");
-    expect(mockExtractKeywords).toHaveBeenCalledWith("job description");
-    expect(mockTailorSkills).toHaveBeenCalledWith("Skills-original", ["React", "AWS"]);
-    expect(mockTailorExperience).toHaveBeenCalledWith(
-      "Experience-original",
-      ["React", "AWS"]
-    );
-    expect(mockTailorProjects).toHaveBeenCalledWith(
-      "Projects-original",
-      ["React", "AWS"]
-    );
-    expect(mockReplace).toHaveBeenCalledWith(master, "Skills", "skills!");
-    expect(mockRender).toHaveBeenCalledWith(
-      `${master}+Skills:skills!+Experience:experience!+Projects:projects!`
-    );
-    expect(mockSave).toHaveBeenCalledWith("Acme", "Software Engineer", pdf);
-    expect(result).toEqual({
-      pdfPath: "storage/resumes/generated/acme-software-engineer.pdf",
-      keywords: ["React", "AWS"]
-    });
+    expect(mockTailorSkills).toHaveBeenCalledTimes(2);
+    const feedback = mockTailorSkills.mock.calls[1][2];
+    expect(feedback).toContain("AWS");
+    expect(feedback).toContain("2 pages");
+    expect(feedback).toContain("Beta Inc");
+    expect(mockWarn).toHaveBeenCalledWith(expect.stringContaining("ATS gate failed"));
+    expect(result.ats).toEqual(passingReport);
+  });
+
+  it("saves the resume anyway after the retry still fails, with the failing report attached", async () => {
+    const failingReport = { ...passingReport, score: 40, missingKeywords: ["AWS"], passed: false };
+    mockEvaluate.mockReturnValue(failingReport);
+
+    const result = await resumeTailorService.generate(job);
+
+    expect(mockTailorSkills).toHaveBeenCalledTimes(2);
+    expect(mockSave).toHaveBeenCalled();
+    expect(result.ats).toEqual(failingReport);
   });
 });

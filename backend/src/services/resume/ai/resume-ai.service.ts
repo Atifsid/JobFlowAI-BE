@@ -24,25 +24,21 @@ class ResumeAIService {
     );
   }
 
-  async tailorSkills(skills: string, keywords: string[]) {
+  async tailorSkills(skills: string, keywords: string[], feedback?: string) {
     return this.stripOverflowWarning(
-      await aiService.tailorSkills(skills, keywords)
+      await aiService.tailorSkills(skills, keywords, feedback)
     );
   }
 
-  async tailorExperience(experience: string, keywords: string[]) {
-    const tailored = this.stripOverflowWarning(
-      await aiService.tailorExperience(experience, keywords)
+  async tailorExperience(experience: string, keywords: string[], feedback?: string) {
+    return this.stripOverflowWarning(
+      await aiService.tailorExperience(experience, keywords, feedback)
     );
-
-    this.warnIfEmployerDropped(experience, tailored);
-
-    return tailored;
   }
 
-  async tailorProjects(projects: string, keywords: string[]) {
+  async tailorProjects(projects: string, keywords: string[], feedback?: string) {
     return this.stripOverflowWarning(
-      await aiService.tailorProjects(projects, keywords)
+      await aiService.tailorProjects(projects, keywords, feedback)
     );
   }
 
@@ -81,26 +77,6 @@ class ResumeAIService {
 
     logger.warn(text.slice(index).trim());
     return text.slice(0, index).trim();
-  }
-
-  // The tailoring prompt requires every employer to be kept (no gaps in
-  // the timeline), but smaller/local models don't always follow that
-  // reliably - observed live with a 7B Ollama model silently dropping an
-  // entire role. This can't fix a bad tailoring, but it makes sure a
-  // dropped employer is loudly flagged rather than only caught by
-  // proofreading the generated resume.
-  private warnIfEmployerDropped(original: string, tailored: string): void {
-    const employers = [...original.matchAll(/\*\*.+?\*\*\s*\|\s*(.+?)\s*\|/g)].map(
-      match => match[1].trim()
-    );
-
-    const missing = employers.filter(employer => !tailored.includes(employer));
-
-    if (missing.length > 0) {
-      logger.warn(
-        `Tailored Experience section is missing employer(s): ${missing.join(", ")}. The master resume rule requires keeping every employer - review this generated resume before sending it.`
-      );
-    }
   }
 }
 

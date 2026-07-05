@@ -17,7 +17,7 @@ const pipeline = {
 
 describe("JobDetail", () => {
   it("renders the pipeline via JobDetailPanel", () => {
-    vi.mocked(useJobDetail).mockReturnValue({ pipeline, loading: false, error: null, updateStatus: vi.fn() });
+    vi.mocked(useJobDetail).mockReturnValue({ pipeline, loading: false, error: null, updateStatus: vi.fn(), reload: vi.fn() });
 
     render(
       <MemoryRouter initialEntries={["/jobs/1"]}>
@@ -31,7 +31,7 @@ describe("JobDetail", () => {
   });
 
   it("shows the error message on failure", () => {
-    vi.mocked(useJobDetail).mockReturnValue({ pipeline: null, loading: false, error: "Job not found in dashboard", updateStatus: vi.fn() });
+    vi.mocked(useJobDetail).mockReturnValue({ pipeline: null, loading: false, error: "Job not found in dashboard", updateStatus: vi.fn(), reload: vi.fn() });
 
     render(
       <MemoryRouter initialEntries={["/jobs/1"]}>
@@ -45,7 +45,7 @@ describe("JobDetail", () => {
   });
 
   it("runs resume generation then referral drafting when Run Pipeline is clicked", async () => {
-    vi.mocked(useJobDetail).mockReturnValue({ pipeline, loading: false, error: null, updateStatus: vi.fn() });
+    vi.mocked(useJobDetail).mockReturnValue({ pipeline, loading: false, error: null, updateStatus: vi.fn(), reload: vi.fn() });
     vi.mocked(resumeService.generate).mockResolvedValue({ pdfPath: "a.pdf" });
     vi.mocked(referralService.generateDrafts).mockResolvedValue([]);
 

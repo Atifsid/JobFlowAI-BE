@@ -23,9 +23,21 @@ export type JobStatus =
   | "REFERRAL_READY" | "REFERRAL_SENT" | "APPLIED" | "REJECTED"
   | "INTERVIEW" | "OFFER" | "HIRED" | "SKIPPED";
 
+// Deterministic post-generation check of a tailored resume.
+export interface AtsReport {
+  score: number;
+  matchedKeywords: string[];
+  missingKeywords: string[];
+  pages: number;
+  missingEmployers: string[];
+  passed: boolean;
+}
+
 export interface JobPipeline {
   job: Job;
   status: JobStatus;
+  keywords?: string[];
+  ats?: AtsReport;
 }
 
 export interface Dashboard {
@@ -65,6 +77,7 @@ export interface JobSearchParams {
 export interface ResumeResult {
   pdfPath: string;
   driveLink?: string;
+  ats?: AtsReport;
 }
 
 export interface ReferralDraft {

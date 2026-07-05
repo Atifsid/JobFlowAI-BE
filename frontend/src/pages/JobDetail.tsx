@@ -13,7 +13,7 @@ type PipelineStatus = "idle" | "pending" | "success" | "error";
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { pipeline, loading, error, updateStatus } = useJobDetail(id);
+  const { pipeline, loading, error, updateStatus, reload } = useJobDetail(id);
   const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus>("idle");
   const [pipelineMessage, setPipelineMessage] = useState<string | null>(null);
 
@@ -26,6 +26,8 @@ export default function JobDetail() {
       await referralService.generateDrafts(id);
       setPipelineStatus("success");
       setPipelineMessage("Resume generated and referral drafted.");
+      // Pull the refreshed pipeline so the new ATS report and status show.
+      await reload();
     } catch (err) {
       setPipelineStatus("error");
       setPipelineMessage(err instanceof Error ? err.message : "Pipeline failed");

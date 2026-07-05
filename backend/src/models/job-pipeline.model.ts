@@ -1,5 +1,6 @@
 import { Job } from "./job.model";
 import { JobStatus } from "./job-status.model";
+import { AtsReport } from "./ats-report.model";
 
 // The per-job record persisted in the local cache and rendered by the
 // frontend. Search stores just the job + a status; pipeline runs (resume
@@ -12,4 +13,6 @@ export interface JobPipeline {
   // Target keywords extracted from the JD when the pipeline ran resume
   // generation - input to the tailoring prompts and the ATS gate.
   keywords?: string[];
+  // Result of the deterministic ATS check of the last generated resume.
+  ats?: AtsReport;
 }

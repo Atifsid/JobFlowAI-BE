@@ -21,16 +21,16 @@ class AIService {
     return this.chat(buildExtractKeywordsPrompt(jobDescription));
   }
 
-  async tailorSkills(skills: string, keywords: string[]) {
-    return this.chat(buildTailorSkillsPrompt(skills, keywords));
+  async tailorSkills(skills: string, keywords: string[], feedback?: string) {
+    return this.chat(buildTailorSkillsPrompt(skills, keywords, feedback));
   }
 
-  async tailorExperience(experience: string, keywords: string[]) {
-    return this.chat(buildTailorExperiencePrompt(experience, keywords));
+  async tailorExperience(experience: string, keywords: string[], feedback?: string) {
+    return this.chat(buildTailorExperiencePrompt(experience, keywords, feedback));
   }
 
-  async tailorProjects(projects: string, keywords: string[]) {
-    return this.chat(buildTailorProjectsPrompt(projects, keywords));
+  async tailorProjects(projects: string, keywords: string[], feedback?: string) {
+    return this.chat(buildTailorProjectsPrompt(projects, keywords, feedback));
   }
 }
 

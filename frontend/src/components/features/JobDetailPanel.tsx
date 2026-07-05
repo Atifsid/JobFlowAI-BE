@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import StatusBadge from "@/components/shared/StatusBadge";
+import ScoreCircle from "../shared/ScoreCircle";
+import SkillBadges from "./SkillBadges";
 import JobStatusSelect from "./JobStatusSelect";
 import JobActionList from "./JobActionList";
 import type { Job, JobPipeline, JobStatus } from "../../types";
@@ -54,7 +57,7 @@ export default function JobDetailPanel({
   pipelineStatus = "idle",
   pipelineMessage
 }: JobDetailPanelProps) {
-  const { job, status } = pipeline;
+  const { job, status, ats } = pipeline;
 
   return (
     <Card>
@@ -78,6 +81,31 @@ export default function JobDetailPanel({
         </div>
 
         <Separator />
+
+        {ats && (
+          <>
+            <div className="flex flex-wrap items-center gap-6">
+              <ScoreCircle score={ats.score} size={120} />
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <div className="flex flex-wrap items-baseline gap-2">
+                  <StatusBadge tone={ats.passed ? "success" : "warning"}>
+                    {ats.passed ? "ATS Pass" : "Needs Review"}
+                  </StatusBadge>
+                  <p className="text-xs text-muted-foreground">
+                    {ats.score}% of target keywords in the generated resume · {ats.pages}{" "}
+                    page{ats.pages === 1 ? "" : "s"}
+                  </p>
+                </div>
+                {ats.missingEmployers.length > 0 && (
+                  <p className="text-xs text-destructive">
+                    Dropped employer(s): {ats.missingEmployers.join(", ")} — review before sending.
+                  </p>
+                )}
+              </div>
+            </div>
+            <SkillBadges matched={ats.matchedKeywords} missing={ats.missingKeywords} />
+          </>
+        )}
 
         {onRunPipeline && (
           <div className="flex flex-wrap items-center gap-3">

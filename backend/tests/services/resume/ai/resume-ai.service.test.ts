@@ -98,7 +98,7 @@ describe("ResumeAIService", () => {
 
     const result = await resumeAIService.tailorSkills("React", ["React", "AWS"]);
 
-    expect(mockTailorSkills).toHaveBeenCalledWith("React", ["React", "AWS"]);
+    expect(mockTailorSkills).toHaveBeenCalledWith("React", ["React", "AWS"], undefined);
     expect(result).toBe("tailored skills");
   });
 
@@ -107,7 +107,7 @@ describe("ResumeAIService", () => {
 
     const result = await resumeAIService.tailorExperience("Built stuff", ["AWS"]);
 
-    expect(mockTailorExperience).toHaveBeenCalledWith("Built stuff", ["AWS"]);
+    expect(mockTailorExperience).toHaveBeenCalledWith("Built stuff", ["AWS"], undefined);
     expect(result).toBe("tailored experience");
   });
 
@@ -116,7 +116,7 @@ describe("ResumeAIService", () => {
 
     const result = await resumeAIService.tailorProjects("JobFlowAI", ["React"]);
 
-    expect(mockTailorProjects).toHaveBeenCalledWith("JobFlowAI", ["React"]);
+    expect(mockTailorProjects).toHaveBeenCalledWith("JobFlowAI", ["React"], undefined);
     expect(result).toBe("tailored projects");
   });
 
@@ -133,35 +133,11 @@ describe("ResumeAIService", () => {
     );
   });
 
-  it("warns when the tailored Experience section drops an employer", async () => {
-    const original = `**Senior Engineer** | Acme Corp | Jan 2024 – Present
-- Did stuff.
+  it("passes retry feedback through to the AI service", async () => {
+    mockTailorSkills.mockResolvedValue("tailored");
 
-**Engineer** | Beta Inc | Jan 2020 – Jan 2024
-- Did other stuff.`;
+    await resumeAIService.tailorSkills("React", ["React"], "missing: AWS");
 
-    mockTailorExperience.mockResolvedValue(
-      "**Senior Engineer** | Acme Corp | Jan 2024 – Present\n- Did stuff."
-    );
-
-    await resumeAIService.tailorExperience(original, ["React"]);
-
-    expect(mockWarn).toHaveBeenCalledWith(
-      expect.stringContaining("Beta Inc")
-    );
-  });
-
-  it("does not warn when every employer is kept in the tailored Experience section", async () => {
-    const original = `**Senior Engineer** | Acme Corp | Jan 2024 – Present
-- Did stuff.
-
-**Engineer** | Beta Inc | Jan 2020 – Jan 2024
-- Did other stuff.`;
-
-    mockTailorExperience.mockResolvedValue(original);
-
-    await resumeAIService.tailorExperience(original, ["React"]);
-
-    expect(mockWarn).not.toHaveBeenCalled();
+    expect(mockTailorSkills).toHaveBeenCalledWith("React", ["React"], "missing: AWS");
   });
 });

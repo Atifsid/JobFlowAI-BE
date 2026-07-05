@@ -67,6 +67,44 @@ describe("JobDetailPanel", () => {
     await waitFor(() => expect(onStatusChange).toHaveBeenCalledWith("APPLIED"));
   });
 
+  it("shows the ATS report when the pipeline has run", () => {
+    const withAts = {
+      ...pipeline,
+      ats: {
+        score: 82,
+        matchedKeywords: ["React", "TypeScript"],
+        missingKeywords: ["Go"],
+        pages: 1,
+        missingEmployers: ["Beta Inc"],
+        passed: true
+      }
+    };
+
+    render(
+      <MemoryRouter>
+        <JobDetailPanel pipeline={withAts} onStatusChange={vi.fn()} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("82")).toBeInTheDocument();
+    expect(screen.getByText("ATS Pass")).toBeInTheDocument();
+    expect(screen.getByText(/82% of target keywords/)).toBeInTheDocument();
+    expect(screen.getByText("React")).toBeInTheDocument();
+    expect(screen.getByText("Go")).toBeInTheDocument();
+    expect(screen.getByText(/Dropped employer\(s\): Beta Inc/)).toBeInTheDocument();
+  });
+
+  it("omits the ATS section before the pipeline has run", () => {
+    render(
+      <MemoryRouter>
+        <JobDetailPanel pipeline={pipeline} onStatusChange={vi.fn()} />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByText("ATS Pass")).not.toBeInTheDocument();
+    expect(screen.queryByText("Needs Review")).not.toBeInTheDocument();
+  });
+
   it("omits the Run Pipeline button when onRunPipeline isn't provided", () => {
     render(
       <MemoryRouter>

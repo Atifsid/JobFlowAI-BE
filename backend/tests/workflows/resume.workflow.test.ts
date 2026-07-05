@@ -26,6 +26,7 @@ vi.mock("../../src/services/sheets/sheets.service", () => ({
 
 const job = { id: "job-1", title: "Engineer", company: "Acme", location: "NYC", remote: false, description: "", skills: [], applyUrl: "https://x.com", source: "test" };
 const pipeline = { job, status: JobStatus.DISCOVERED };
+const ats = { score: 90, matchedKeywords: ["React"], missingKeywords: [], pages: 1, missingEmployers: [], passed: true };
 
 describe("ResumeWorkflow.run", () => {
   beforeEach(() => {
@@ -34,7 +35,7 @@ describe("ResumeWorkflow.run", () => {
     mockGetPipeline.mockReset().mockResolvedValue(pipeline);
     mockCacheSave.mockReset();
     mockAdvanceStatus.mockReset();
-    mockGenerate.mockReset().mockResolvedValue({ pdfPath: "storage/resumes/generated/a.pdf", keywords: ["React", "AWS"] });
+    mockGenerate.mockReset().mockResolvedValue({ pdfPath: "storage/resumes/generated/a.pdf", keywords: ["React", "AWS"], ats });
     mockUpload.mockReset().mockResolvedValue("https://drive.example/a");
     mockUpsert.mockReset();
   });
@@ -45,13 +46,13 @@ describe("ResumeWorkflow.run", () => {
     await expect(workflow.run("missing")).rejects.toThrow("Job not found.");
   });
 
-  it("persists the extracted keywords on the cached pipeline, then advances its status", async () => {
+  it("persists the extracted keywords and ATS report on the cached pipeline, then advances its status", async () => {
     vi.doMock("../../src/config/env", () => ({ env: { DRIVE_UPLOAD_ENABLED: false, GOOGLE_SHEET_ID: "" } }));
     const { default: workflow } = await import("../../src/workflows/resume.workflow");
 
     await workflow.run("job-1");
 
-    expect(mockCacheSave).toHaveBeenCalledWith({ ...pipeline, keywords: ["React", "AWS"] });
+    expect(mockCacheSave).toHaveBeenCalledWith({ ...pipeline, keywords: ["React", "AWS"], ats });
     expect(mockAdvanceStatus).toHaveBeenCalledWith("job-1", JobStatus.RESUME_GENERATED);
   });
 
@@ -81,7 +82,7 @@ describe("ResumeWorkflow.run", () => {
     const result = await workflow.run("job-1");
 
     expect(mockUpload).not.toHaveBeenCalled();
-    expect(result).toEqual({ pdfPath: "storage/resumes/generated/a.pdf", driveLink: undefined });
-    expect(mockCacheSave).toHaveBeenCalledWith({ ...pipeline, keywords: ["React", "AWS"] });
+    expect(result).toEqual({ pdfPath: "storage/resumes/generated/a.pdf", driveLink: undefined, ats });
+    expect(mockCacheSave).toHaveBeenCalledWith({ ...pipeline, keywords: ["React", "AWS"], ats });
   });
 });
