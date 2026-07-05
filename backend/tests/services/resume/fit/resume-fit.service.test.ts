@@ -173,6 +173,35 @@ describe("ResumeFitService.growOneStep", () => {
     // left to add.
     expect(grown).toBeNull();
   });
+
+  it("does not re-add the master bullet when the model's version is a condensed subset of it", () => {
+    // Observed live twice: the model DROPPED a trailing clause rather than
+    // adding one, e.g. keeping only "Developed a .NET Web API for the Job
+    // Sheet module in a Fleet Management System." from the master's fuller
+    // "...supporting maintenance operations for 100+ vehicles." The old
+    // overlap check divided by the CANDIDATE's (master's, longer) word
+    // count, so this scored exactly 0.6 and slipped through a ">" check.
+    const master = {
+      skills: "L1: a",
+      experience: [
+        "**Software Developer** | Beta Arrays | 2025",
+        "- Developed a .NET Web API for the Job Sheet module in a Fleet Management System, supporting maintenance operations for 100+ vehicles.",
+        "- Refactored file storage logic by centralizing S3 directory usage with environment-based configuration, removing hardcoded paths."
+      ].join("\n"),
+      projects: project("P1", 1)
+    };
+    const tailored = {
+      skills: "L1: a",
+      experience: [
+        "**Software Developer** | Beta Arrays | 2025",
+        "- Developed a .NET Web API for the Job Sheet module in a Fleet Management System.",
+        "- Refactored file storage logic using AWS S3 with environment-based configuration."
+      ].join("\n"),
+      projects: project("P1", 1)
+    };
+
+    expect(resumeFitService.growOneStep(tailored, master)).toBeNull();
+  });
 });
 
 describe("ResumeFitService.trimOneStep", () => {

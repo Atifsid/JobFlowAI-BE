@@ -156,8 +156,18 @@ class ResumeFitService {
 
     return existing.some(line => {
       const existingWords = words(line);
+      // Growth restores from the master, which is usually the longer,
+      // more-detailed original; the tailored bullet is often a condensed
+      // subset of it. Dividing by the candidate's (often larger) word
+      // count under-counts real overlap - observed live, a 10-word master
+      // bullet whose 6-word tailored condensation was an exact subset
+      // scored exactly 0.6 and slipped through a ">" check. Dividing by
+      // the SMALLER side catches "near-total subset in either direction"
+      // regardless of which bullet happens to be longer.
+      const smaller = Math.min(candidateWords.size, existingWords.size);
+      if (smaller < 3) return false;
       const overlap = [...candidateWords].filter(w => existingWords.has(w)).length;
-      return overlap / candidateWords.size > 0.6;
+      return overlap / smaller > 0.6;
     });
   }
 
