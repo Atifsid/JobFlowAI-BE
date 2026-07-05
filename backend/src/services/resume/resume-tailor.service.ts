@@ -102,8 +102,8 @@ class ResumeTailorService {
     return tailored;
   }
 
-  // Hard constraints first (one page, no dropped roles), keyword
-  // coverage only as the tiebreaker.
+  // Hard constraints first (one page, no dropped roles), then the
+  // generation-quality coverage as the tiebreaker.
   private isBetter(candidate: AtsReport, current: AtsReport): boolean {
     if (candidate.passed !== current.passed) return candidate.passed;
 
@@ -115,7 +115,7 @@ class ResumeTailorService {
       return candidateKeepsEmployers;
     }
 
-    return candidate.score > current.score;
+    return candidate.claimableCoverage > current.claimableCoverage;
   }
 
   private buildFeedback(ats: AtsReport): string {

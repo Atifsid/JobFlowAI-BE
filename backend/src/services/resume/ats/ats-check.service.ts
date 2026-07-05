@@ -25,29 +25,42 @@ interface AtsCheckInput {
 class AtsCheckService {
   evaluate(input: AtsCheckInput): AtsReport {
     const { matched, missing } = this.matchKeywords(input.markdown, input.keywords);
-    const score = input.keywords.length
-      ? Math.round((matched.length / input.keywords.length) * 100)
+
+    // Two different questions, two different denominators:
+    // - score: how well does this resume match the JD (all keywords,
+    //   gaps included) - the number a real ATS would effectively compute,
+    //   and the one shown to the user to rank jobs by fit.
+    // - claimableCoverage: did the generator include everything it
+    //   truthfully could - the gate metric. With claimable-only prompts
+    //   and code-enforced budgets this should be high; a low overall
+    //   score with high claimableCoverage means "poor-fit job", not
+    //   "bad generation".
+    const totalKeywords = input.keywords.length + input.trueGaps.length;
+    const score = totalKeywords
+      ? Math.round((matched.length / totalKeywords) * 100)
       : 0;
+    const claimableCoverage = input.keywords.length
+      ? Math.round((matched.length / input.keywords.length) * 100)
+      : 100;
+
     const pages = this.countPdfPages(input.pdf);
     const missingEmployers = this.findMissingEmployers(
       input.masterExperience,
       input.tailoredExperience
     );
 
-    // With no claimable keywords at all there's nothing for coverage to
-    // measure - the job is simply a poor fit (all keywords in trueGaps);
-    // don't fail the generation for it.
-    const coverageOk =
-      input.keywords.length === 0 || score >= COVERAGE_THRESHOLD;
-
     return {
       score,
+      claimableCoverage,
       matchedKeywords: matched,
       missingKeywords: missing,
       trueGaps: input.trueGaps,
       pages,
       missingEmployers,
-      passed: coverageOk && pages <= MAX_PAGES && missingEmployers.length === 0
+      passed:
+        claimableCoverage >= COVERAGE_THRESHOLD &&
+        pages <= MAX_PAGES &&
+        missingEmployers.length === 0
     };
   }
 

@@ -33,6 +33,7 @@ describe("AtsCheckService.evaluate", () => {
 
     expect(report).toEqual({
       score: 100,
+      claimableCoverage: 100,
       matchedKeywords: ["React", "TypeScript", "Node.js", "AWS"],
       missingKeywords: [],
       trueGaps: [],
@@ -42,7 +43,7 @@ describe("AtsCheckService.evaluate", () => {
     });
   });
 
-  it("fails below 75% keyword coverage and lists the missing keywords", () => {
+  it("fails below 75% claimable coverage and lists the missing keywords", () => {
     const report = atsCheckService.evaluate({
       ...baseInput,
       markdown: "Built with React only.",
@@ -50,8 +51,24 @@ describe("AtsCheckService.evaluate", () => {
     });
 
     expect(report.score).toBe(25);
+    expect(report.claimableCoverage).toBe(25);
     expect(report.missingKeywords).toEqual(["TypeScript", "Node.js", "AWS"]);
     expect(report.passed).toBe(false);
+  });
+
+  it("scores fit over ALL keywords while gating only on the claimable ones", () => {
+    // 2 claimable (both present) + 6 true gaps: the generator did all it
+    // could (gate passes) but the fit score is honest about the JD.
+    const report = atsCheckService.evaluate({
+      ...baseInput,
+      markdown: "React and TypeScript everywhere.",
+      keywords: ["React", "TypeScript"],
+      trueGaps: ["Python", "Go", "WPF", "Rust", "Scala", "Perl"]
+    });
+
+    expect(report.claimableCoverage).toBe(100);
+    expect(report.score).toBe(25); // 2 of 8 total JD keywords
+    expect(report.passed).toBe(true);
   });
 
   it("matches keywords case-insensitively but never inside a longer word", () => {

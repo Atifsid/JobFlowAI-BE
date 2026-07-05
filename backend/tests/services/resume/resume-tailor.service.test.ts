@@ -88,6 +88,7 @@ const job: Job = {
 
 const passingReport = {
   score: 90,
+  claimableCoverage: 100,
   matchedKeywords: ["React"],
   missingKeywords: [],
   trueGaps: ["Python"],
@@ -181,7 +182,7 @@ describe("ResumeTailorService.generate", () => {
   });
 
   it("retries with feedback when claimable coverage fails, keeping the best attempt", async () => {
-    const failing = { ...passingReport, score: 50, missingKeywords: ["React"], passed: false };
+    const failing = { ...passingReport, score: 50, claimableCoverage: 50, missingKeywords: ["React"], passed: false };
     mockEvaluate.mockReturnValueOnce(failing).mockReturnValueOnce(passingReport);
 
     const result = await resumeTailorService.generate(job);
@@ -193,8 +194,8 @@ describe("ResumeTailorService.generate", () => {
   });
 
   it("saves the best attempt when all attempts fail", async () => {
-    const worse = { ...passingReport, score: 40, missingKeywords: ["React"], passed: false };
-    const better = { ...passingReport, score: 60, missingKeywords: [], passed: false, pages: 1 };
+    const worse = { ...passingReport, score: 40, claimableCoverage: 40, missingKeywords: ["React"], passed: false };
+    const better = { ...passingReport, score: 60, claimableCoverage: 60, missingKeywords: [], passed: false, pages: 1 };
     mockEvaluate
       .mockReturnValueOnce(worse)
       .mockReturnValueOnce(better)

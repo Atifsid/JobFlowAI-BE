@@ -25,7 +25,12 @@ export type JobStatus =
 
 // Deterministic post-generation check of a tailored resume.
 export interface AtsReport {
+  // Coverage of ALL the JD's keywords (gaps included) - the fit score.
   score: number;
+  // Coverage of just the claimable keywords - the generation-quality
+  // gate metric. Optional: reports persisted before this field existed
+  // don't have it.
+  claimableCoverage?: number;
   matchedKeywords: string[];
   missingKeywords: string[];
   // JD keywords absent from the master resume - fit gaps, not

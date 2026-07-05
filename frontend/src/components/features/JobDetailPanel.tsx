@@ -89,11 +89,12 @@ export default function JobDetailPanel({
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <div className="flex flex-wrap items-baseline gap-2">
                   <StatusBadge tone={ats.passed ? "success" : "warning"}>
-                    {ats.passed ? "ATS Pass" : "Needs Review"}
+                    {ats.passed ? "Resume Ready" : "Needs Review"}
                   </StatusBadge>
                   <p className="text-xs text-muted-foreground">
-                    {ats.score}% of target keywords in the generated resume · {ats.pages}{" "}
-                    page{ats.pages === 1 ? "" : "s"}
+                    {ats.score}% JD keyword match ({ats.matchedKeywords.length}/
+                    {ats.matchedKeywords.length + ats.missingKeywords.length + (ats.trueGaps?.length ?? 0)})
+                    · {ats.pages} page{ats.pages === 1 ? "" : "s"}
                   </p>
                 </div>
                 {ats.missingEmployers.length > 0 && (

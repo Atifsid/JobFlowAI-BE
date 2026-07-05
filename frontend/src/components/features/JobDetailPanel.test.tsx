@@ -72,8 +72,10 @@ describe("JobDetailPanel", () => {
       ...pipeline,
       ats: {
         score: 82,
+        claimableCoverage: 100,
         matchedKeywords: ["React", "TypeScript"],
         missingKeywords: ["Go"],
+        trueGaps: ["Python"],
         pages: 1,
         missingEmployers: ["Beta Inc"],
         passed: true
@@ -87,8 +89,9 @@ describe("JobDetailPanel", () => {
     );
 
     expect(screen.getByText("82")).toBeInTheDocument();
-    expect(screen.getByText("ATS Pass")).toBeInTheDocument();
-    expect(screen.getByText(/82% of target keywords/)).toBeInTheDocument();
+    expect(screen.getByText("Resume Ready")).toBeInTheDocument();
+    expect(screen.getByText(/82% JD keyword match \(2\/4\)/)).toBeInTheDocument();
+    expect(screen.getByText(/true fit gaps.*Python/i)).toBeInTheDocument();
     expect(screen.getByText("React")).toBeInTheDocument();
     expect(screen.getByText("Go")).toBeInTheDocument();
     expect(screen.getByText(/Dropped employer\(s\): Beta Inc/)).toBeInTheDocument();
@@ -101,7 +104,7 @@ describe("JobDetailPanel", () => {
       </MemoryRouter>
     );
 
-    expect(screen.queryByText("ATS Pass")).not.toBeInTheDocument();
+    expect(screen.queryByText("Resume Ready")).not.toBeInTheDocument();
     expect(screen.queryByText("Needs Review")).not.toBeInTheDocument();
   });
 
