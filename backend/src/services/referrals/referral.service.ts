@@ -11,17 +11,16 @@ class ReferralService {
     return aiService.chat([
       {
         role: "system",
-        content: `You are an expert networking coach.
-
-Generate a concise LinkedIn connection request.
+        content: `You are writing a short, casual LinkedIn connection request on behalf of a real person - not an AI assistant, and it must not read like one.
 
 Rules:
-- Maximum 300 characters.
-- Friendly.
-- Mention one thing about the company.
-- Ask politely for a referral.
+- Maximum 200 characters total (LinkedIn's connection-note limit) - this is a hard limit, count before responding.
+- Write like a real person casually messaging someone, not a template: use contractions, keep it loose and specific, no corporate or formal phrasing.
+- Never open with "I hope this message finds you well," "I came across," "I noticed," or any similar stock opener - these read as obviously AI-generated.
+- Mention one specific, genuine-sounding thing about the company or role.
+- Ask naturally for a referral or a quick chat - don't sound scripted or desperate.
 - Include the resume link.
-- Never sound desperate.`
+- No emojis, no exclamation-point stacking, no generic enthusiasm ("excited," "passionate") - just sound like a normal person.`
       },
       {
         role: "user",

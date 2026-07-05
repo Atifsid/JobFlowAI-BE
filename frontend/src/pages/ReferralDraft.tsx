@@ -52,8 +52,8 @@ export default function ReferralDraft() {
               </div>
               <Textarea readOnly value={message} className="min-h-24 resize-none" />
               <div className="flex items-center justify-between">
-                <p className={cn("text-xs", message.length > 300 ? "text-destructive" : "text-muted-foreground")}>
-                  {message.length}/300
+                <p className={cn("text-xs", message.length > 200 ? "text-destructive" : "text-muted-foreground")}>
+                  {message.length}/200
                 </p>
                 <Button variant="outline" size="sm" onClick={() => copy(employee.linkedin, message)}>
                   {copiedFor === employee.linkedin ? "Copied!" : "Copy to Clipboard"}

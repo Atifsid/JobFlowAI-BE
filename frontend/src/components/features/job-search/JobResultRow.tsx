@@ -1,3 +1,4 @@
+import { Checkbox } from "@/components/ui/checkbox";
 import InitialsAvatar from "@/components/shared/InitialsAvatar";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { labelForDecision, toneForDecision } from "@/lib/jobLabels";
@@ -8,42 +9,67 @@ interface JobResultRowProps {
   pipeline: JobPipeline;
   selected: boolean;
   onSelect: () => void;
+  checked: boolean;
+  onCheckedChange: () => void;
+  checkDisabled?: boolean;
+  pipelineStatusLabel?: string;
 }
 
-export default function JobResultRow({ pipeline, selected, onSelect }: JobResultRowProps) {
+export default function JobResultRow({
+  pipeline,
+  selected,
+  onSelect,
+  checked,
+  onCheckedChange,
+  checkDisabled,
+  pipelineStatusLabel
+}: JobResultRowProps) {
   const { job, score, decision } = pipeline;
 
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={selected}
+    <div
       className={cn(
-        "flex w-full items-center gap-3 rounded-xl bg-card px-4 py-3 text-left ring-1 transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "flex w-full items-center gap-3 rounded-xl bg-card px-4 py-3 ring-1 transition-shadow",
         selected
           ? "ring-2 ring-ring"
           : "ring-foreground/10 hover:shadow-[0_4px_12px_rgba(0,0,0,0.4)] hover:ring-foreground/20"
       )}
     >
-      <InitialsAvatar name={job.company} />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">{job.title}</p>
-        <p className="truncate text-xs text-muted-foreground">
-          {job.company}
-          <span className="hidden sm:inline">
-            {" "}
-            · {job.location}
-            {job.remote ? " · Remote" : ""}
-          </span>
-        </p>
-      </div>
-      <StatusBadge tone={toneForDecision(decision)}>{labelForDecision(decision)}</StatusBadge>
-      <span
-        aria-label={`Match score ${score.score} out of 100`}
-        className="w-8 shrink-0 text-right text-sm font-semibold tabular-nums text-foreground"
+      <Checkbox
+        checked={checked}
+        disabled={checkDisabled}
+        onCheckedChange={onCheckedChange}
+        aria-label={`Select ${job.title} for pipeline`}
+      />
+      {pipelineStatusLabel && (
+        <span className="shrink-0 text-xs text-muted-foreground">{pipelineStatusLabel}</span>
+      )}
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-pressed={selected}
+        className="flex min-w-0 flex-1 items-center gap-3 text-left focus-visible:outline-none"
       >
-        {score.score}
-      </span>
-    </button>
+        <InitialsAvatar name={job.company} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-foreground">{job.title}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {job.company}
+            <span className="hidden sm:inline">
+              {" "}
+              · {job.location}
+              {job.remote ? " · Remote" : ""}
+            </span>
+          </p>
+        </div>
+        <StatusBadge tone={toneForDecision(decision)}>{labelForDecision(decision)}</StatusBadge>
+        <span
+          aria-label={`Match score ${score.score} out of 100`}
+          className="w-8 shrink-0 text-right text-sm font-semibold tabular-nums text-foreground"
+        >
+          {score.score}
+        </span>
+      </button>
+    </div>
   );
 }

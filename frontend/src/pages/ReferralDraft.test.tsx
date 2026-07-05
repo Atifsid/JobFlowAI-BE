@@ -33,7 +33,7 @@ describe("ReferralDraft", () => {
     });
     renderPage();
 
-    expect(screen.getByText("8/300")).toBeInTheDocument();
+    expect(screen.getByText("8/200")).toBeInTheDocument();
     fireEvent.click(screen.getByText("Copy to Clipboard"));
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith("Hi Sarah");
   });

@@ -1,13 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockJobspediaSearch, mockGreenhouseSearch, mockExists, mockRunMany, mockBuild, mockSave, mockUpsert } = vi.hoisted(() => ({
+const { mockJobspediaSearch, mockGreenhouseSearch, mockRunMany, mockBuild, mockSave } = vi.hoisted(() => ({
   mockJobspediaSearch: vi.fn(),
   mockGreenhouseSearch: vi.fn(),
-  mockExists: vi.fn(),
   mockRunMany: vi.fn(),
   mockBuild: vi.fn(),
-  mockSave: vi.fn(),
-  mockUpsert: vi.fn()
+  mockSave: vi.fn()
 }));
 
 vi.mock("../../src/services/jobs/providers/jobspedia/jobspedia.service", () => ({
@@ -22,9 +20,6 @@ vi.mock("../../src/services/jobs/job-pipeline.service", () => ({
 vi.mock("../../src/services/dashboard/dashboard.service", () => ({
   default: { build: mockBuild }
 }));
-vi.mock("../../src/services/sheets/sheets.service", () => ({
-  default: { exists: mockExists, upsert: mockUpsert }
-}));
 vi.mock("../../src/services/jobs/job-cache.service", () => ({
   default: { save: mockSave }
 }));
@@ -33,11 +28,32 @@ describe("SearchJobsWorkflow.run", () => {
   beforeEach(() => {
     mockJobspediaSearch.mockReset();
     mockGreenhouseSearch.mockReset();
-    mockExists.mockReset().mockResolvedValue(false);
     mockRunMany.mockReset().mockResolvedValue([]);
     mockBuild.mockReset().mockReturnValue({ total: 0, referral: 0, directApply: 0, skip: 0, jobs: [] });
     mockSave.mockReset();
-    mockUpsert.mockReset();
+  });
+
+  it("scores every job found (no Sheets dedup - search never calls Google APIs)", async () => {
+    const job = { id: "1" };
+    mockJobspediaSearch.mockResolvedValue({ jobs: [job], total: 37 });
+    mockGreenhouseSearch.mockResolvedValue({ jobs: [], total: 0 });
+
+    const { default: workflow } = await import("../../src/workflows/search-jobs.workflow");
+    await workflow.run({ title: "Engineer", page: 2, limit: 10 });
+
+    expect(mockRunMany).toHaveBeenCalledWith([job]);
+  });
+
+  it("caches every scored pipeline item for later per-job lookups", async () => {
+    mockJobspediaSearch.mockResolvedValue({ jobs: [{ id: "1" }], total: 1 });
+    mockGreenhouseSearch.mockResolvedValue({ jobs: [], total: 0 });
+    const pipelineItem = { job: { id: "1" }, score: { score: 80 }, decision: "DIRECT_APPLY", actions: [], status: "ANALYZED" };
+    mockRunMany.mockResolvedValue([pipelineItem]);
+
+    const { default: workflow } = await import("../../src/workflows/search-jobs.workflow");
+    await workflow.run({});
+
+    expect(mockSave).toHaveBeenCalledWith(pipelineItem);
   });
 
   it("sums total across providers and passes page/limit/totalMatches to dashboardService.build", async () => {

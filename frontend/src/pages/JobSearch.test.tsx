@@ -1,13 +1,17 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import JobSearch from "./JobSearch";
 import { useJobSearch } from "../hooks/useJobSearch";
 import { useJobStatusUpdate } from "../hooks/useJobStatusUpdate";
+import { resumeService } from "../services/resumeService";
+import { referralService } from "../services/referralService";
 import type { JobPipeline } from "../types";
 
 vi.mock("../hooks/useJobSearch");
 vi.mock("../hooks/useJobStatusUpdate");
+vi.mock("../services/resumeService", () => ({ resumeService: { generate: vi.fn() } }));
+vi.mock("../services/referralService", () => ({ referralService: { generateDrafts: vi.fn() } }));
 
 const pipeline: JobPipeline = {
   job: { id: "1", title: "Senior Engineer", company: "Acme", location: "NYC", remote: false, description: "desc", skills: [], applyUrl: "https://x.com", source: "test" },
@@ -16,6 +20,16 @@ const pipeline: JobPipeline = {
   actions: ["GENERATE_RESUME", "GENERATE_COVER_LETTER", "APPLY"],
   status: "ANALYZED"
 };
+
+function makePipeline(id: string, title: string): JobPipeline {
+  return {
+    job: { id, title, company: "Acme", location: "NYC", remote: false, description: "", skills: [], applyUrl: "https://x.com", source: "test" },
+    score: { score: 50, missingSkills: [], strengths: [], weaknesses: [], recommendation: "" },
+    decision: "SKIP",
+    actions: [],
+    status: "DISCOVERED"
+  };
+}
 
 describe("JobSearch", () => {
   it("shows results counter and job list after a search", () => {
@@ -72,5 +86,53 @@ describe("JobSearch", () => {
     fireEvent.click(screen.getByText("2"));
 
     expect(search).toHaveBeenLastCalledWith(expect.objectContaining({ title: "Engineer", page: 2, limit: 20 }));
+  });
+
+  describe("pipeline selection (up to 5)", () => {
+    const sixJobs = Array.from({ length: 6 }, (_, i) => makePipeline(String(i), `Job ${i}`));
+
+    afterEach(() => {
+      vi.mocked(resumeService.generate).mockReset();
+      vi.mocked(referralService.generateDrafts).mockReset();
+    });
+
+    it("disables the 6th checkbox once 5 are selected", () => {
+      vi.mocked(useJobSearch).mockReturnValue({
+        result: { total: 6, referral: 0, directApply: 0, skip: 6, jobs: sixJobs, page: 1, limit: 20, totalMatches: 6 },
+        loading: false, error: null, search: vi.fn()
+      });
+      vi.mocked(useJobStatusUpdate).mockReturnValue({ updateStatus: vi.fn(), error: null });
+
+      render(<MemoryRouter><JobSearch /></MemoryRouter>);
+
+      const checkboxes = screen.getAllByRole("checkbox", { name: /Select .* for pipeline/ });
+      checkboxes.slice(0, 5).forEach(cb => fireEvent.click(cb));
+
+      expect(screen.getByText("5/5 job(s) selected")).toBeInTheDocument();
+      // base-ui's Checkbox isn't a native <input>/<button disabled>, so it signals
+      // disabled state via a data-disabled attribute rather than the standard
+      // disabled/aria-disabled jest-dom's toBeDisabled() checks for.
+      expect(checkboxes[5]).toHaveAttribute("data-disabled");
+    });
+
+    it("runs resume generation then referral drafting for each selected job, in order", async () => {
+      vi.mocked(useJobSearch).mockReturnValue({
+        result: { total: 2, referral: 0, directApply: 0, skip: 2, jobs: sixJobs.slice(0, 2), page: 1, limit: 20, totalMatches: 2 },
+        loading: false, error: null, search: vi.fn()
+      });
+      vi.mocked(useJobStatusUpdate).mockReturnValue({ updateStatus: vi.fn(), error: null });
+      vi.mocked(resumeService.generate).mockResolvedValue({ pdfPath: "a.pdf" });
+      vi.mocked(referralService.generateDrafts).mockResolvedValue([]);
+
+      render(<MemoryRouter><JobSearch /></MemoryRouter>);
+
+      fireEvent.click(screen.getAllByRole("checkbox", { name: /Select .* for pipeline/ })[0]);
+      fireEvent.click(screen.getByText("Run Pipeline"));
+
+      await waitFor(() => expect(screen.getByText(/1 succeeded, 0 failed/)).toBeInTheDocument());
+
+      expect(resumeService.generate).toHaveBeenCalledWith("0");
+      expect(referralService.generateDrafts).toHaveBeenCalledWith("0");
+    });
   });
 });
