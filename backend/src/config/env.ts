@@ -19,7 +19,11 @@ export const env = {
   // GOOGLE SHEET
   GOOGLE_SHEET_ID: process.env.GOOGLE_SHEET_ID || "",
   GOOGLE_SHEET_NAME: process.env.GOOGLE_SHEET_NAME || "",
-  
+  // Second tab in the same spreadsheet, tracking the people referrals
+  // were sent to (for follow-ups after they accept the invitation).
+  GOOGLE_CONTACTS_SHEET_NAME: process.env.GOOGLE_CONTACTS_SHEET_NAME || "Contacts",
+
+
   // AI
   AI_PROVIDER: process.env.AI_PROVIDER || "claude",
   OLLAMA_MODEL: process.env.OLLAMA_MODEL || "qwen2.5-coder:7b",
