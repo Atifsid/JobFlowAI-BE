@@ -1,11 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import QuickApply from "./QuickApply";
 import { resumeService } from "../services/resumeService";
 import { referralService } from "../services/referralService";
+import { employeeService } from "../services/employeeService";
 
 vi.mock("../services/resumeService", () => ({ resumeService: { generateAdhoc: vi.fn() } }));
 vi.mock("../services/referralService", () => ({ referralService: { generateDraftsAdhoc: vi.fn() } }));
+vi.mock("../services/employeeService", () => ({ employeeService: { findAdhoc: vi.fn() } }));
 
 const description = "A".repeat(60);
 
@@ -16,6 +18,12 @@ function fillForm() {
 }
 
 describe("QuickApply", () => {
+  beforeEach(() => {
+    vi.mocked(resumeService.generateAdhoc).mockReset();
+    vi.mocked(referralService.generateDraftsAdhoc).mockReset();
+    vi.mocked(employeeService.findAdhoc).mockReset();
+  });
+
   it("shows a validation error when the description is too short and does not call the backend", () => {
     render(<QuickApply />);
     fireEvent.change(screen.getByLabelText("Job Title"), { target: { value: "Senior Engineer" } });
@@ -55,5 +63,28 @@ describe("QuickApply", () => {
     fireEvent.click(screen.getByText("Run Pipeline"));
 
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Ollama is not running"));
+  });
+
+  it("finds contacts by company independent of Run Pipeline", async () => {
+    vi.mocked(employeeService.findAdhoc).mockResolvedValue([
+      { name: "Sarah Chen", title: "Staff Engineer", company: "Acme", linkedin: "https://linkedin.com/in/sarah" }
+    ]);
+
+    render(<QuickApply />);
+    fireEvent.change(screen.getByLabelText("Company"), { target: { value: "Acme" } });
+    fireEvent.click(screen.getByText("Find Contacts"));
+
+    await waitFor(() => expect(screen.getByText("Sarah Chen")).toBeInTheDocument());
+    expect(employeeService.findAdhoc).toHaveBeenCalledWith("Acme");
+    expect(resumeService.generateAdhoc).not.toHaveBeenCalled();
+  });
+
+  it("shows an error when Find Contacts is clicked without a company", () => {
+    render(<QuickApply />);
+
+    fireEvent.click(screen.getByText("Find Contacts"));
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Enter a company first");
+    expect(employeeService.findAdhoc).not.toHaveBeenCalled();
   });
 });

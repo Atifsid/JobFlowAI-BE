@@ -1,18 +1,22 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { UsersIcon } from "lucide-react";
 import { resumeService } from "../services/resumeService";
 import { referralService } from "../services/referralService";
+import { employeeService } from "../services/employeeService";
 import PageHeader from "@/components/shared/PageHeader";
 import ScoreCircle from "@/components/shared/ScoreCircle";
 import SkillBadges from "../components/features/SkillBadges";
 import InitialsAvatar from "@/components/shared/InitialsAvatar";
+import ContactCard from "../components/features/ContactCard";
+import EmptyState from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import type { ResumeResult, ReferralDraft } from "../types";
+import type { ResumeResult, ReferralDraft, Employee } from "../types";
 
 type PipelineStatus = "idle" | "pending" | "success" | "error";
 
@@ -29,6 +33,10 @@ export default function QuickApply() {
   const [resume, setResume] = useState<ResumeResult | null>(null);
   const [drafts, setDrafts] = useState<ReferralDraft[] | null>(null);
   const [copiedFor, setCopiedFor] = useState<string | null>(null);
+
+  const [contactsStatus, setContactsStatus] = useState<PipelineStatus>("idle");
+  const [contactsError, setContactsError] = useState<string | null>(null);
+  const [contacts, setContacts] = useState<Employee[] | null>(null);
 
   const runPipeline = async (e: FormEvent) => {
     e.preventDefault();
@@ -69,6 +77,22 @@ export default function QuickApply() {
     setTimeout(() => setCopiedFor(null), 2000);
   };
 
+  const findContacts = async () => {
+    if (!company.trim()) {
+      setContactsError("Enter a company first.");
+      return;
+    }
+    setContactsStatus("pending");
+    setContactsError(null);
+    try {
+      setContacts(await employeeService.findAdhoc(company));
+      setContactsStatus("success");
+    } catch (err) {
+      setContactsStatus("error");
+      setContactsError(err instanceof Error ? err.message : "Employee lookup failed");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -105,9 +129,17 @@ export default function QuickApply() {
               <Button type="submit" disabled={pipelineStatus === "pending"}>
                 {pipelineStatus === "pending" ? "Running pipeline…" : "Run Pipeline"}
               </Button>
+              <Button type="button" variant="outline" onClick={findContacts} disabled={contactsStatus === "pending"}>
+                {contactsStatus === "pending" ? "Searching LinkedIn…" : "Find Contacts"}
+              </Button>
               {pipelineError && (
                 <p role="alert" className="text-xs text-destructive">
                   {pipelineError}
+                </p>
+              )}
+              {contactsError && (
+                <p role="alert" className="text-xs text-destructive">
+                  {contactsError}
                 </p>
               )}
             </div>
@@ -161,6 +193,18 @@ export default function QuickApply() {
                 </div>
               </CardContent>
             </Card>
+          ))}
+        </div>
+      )}
+
+      {contacts && contacts.length === 0 && (
+        <EmptyState icon={UsersIcon} title="No employees found" description="Try again later, or check the company's LinkedIn page directly." />
+      )}
+
+      {contacts && contacts.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {contacts.map(employee => (
+            <ContactCard key={employee.linkedin} employee={employee} />
           ))}
         </div>
       )}
