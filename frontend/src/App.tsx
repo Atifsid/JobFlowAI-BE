@@ -9,6 +9,7 @@ const ResumeTailor = lazy(() => import("./pages/ResumeTailor"));
 const EmployeeSearch = lazy(() => import("./pages/EmployeeSearch"));
 const ReferralDraft = lazy(() => import("./pages/ReferralDraft"));
 const ApplicationTracker = lazy(() => import("./pages/ApplicationTracker"));
+const QuickApply = lazy(() => import("./pages/QuickApply"));
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/" element={<AppShell />}>
           <Route index element={<Dashboard />} />
           <Route path="search" element={<JobSearch />} />
+          <Route path="quick-apply" element={<QuickApply />} />
           <Route path="jobs" element={<ApplicationTracker />} />
           <Route path="jobs/:id" element={<JobDetail />} />
           <Route path="jobs/:id/resume" element={<ResumeTailor />} />

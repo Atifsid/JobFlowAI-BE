@@ -12,6 +12,7 @@ import { useJobDetail } from "@/hooks/useJobDetail";
 const STATIC_LABELS: Record<string, string> = {
   "/": "Dashboard",
   "/search": "Job Search",
+  "/quick-apply": "Paste JD",
   "/jobs": "Tracker",
 };
 

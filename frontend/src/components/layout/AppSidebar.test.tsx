@@ -15,7 +15,7 @@ function renderAt(path: string) {
 }
 
 describe("AppSidebar", () => {
-  it("renders all three top-level nav links", () => {
+  it("renders all four top-level nav links", () => {
     renderAt("/");
     expect(
       screen.getByRole("link", { name: /dashboard/i }),
@@ -23,6 +23,7 @@ describe("AppSidebar", () => {
     expect(
       screen.getByRole("link", { name: /job search/i }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /paste jd/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /tracker/i })).toBeInTheDocument();
   });
 

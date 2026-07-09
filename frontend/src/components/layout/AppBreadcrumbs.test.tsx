@@ -14,6 +14,7 @@ function renderAt(path: string) {
       <Routes>
         <Route path="/" element={<AppBreadcrumbs />} />
         <Route path="/search" element={<AppBreadcrumbs />} />
+        <Route path="/quick-apply" element={<AppBreadcrumbs />} />
         <Route path="/jobs" element={<AppBreadcrumbs />} />
         <Route path="/jobs/:id" element={<AppBreadcrumbs />} />
         <Route path="/jobs/:id/resume" element={<AppBreadcrumbs />} />
@@ -40,6 +41,11 @@ describe("AppBreadcrumbs", () => {
   it("shows Tracker on /jobs", () => {
     renderAt("/jobs");
     expect(screen.getByText("Tracker")).toBeInTheDocument();
+  });
+
+  it("shows Paste JD on /quick-apply", () => {
+    renderAt("/quick-apply");
+    expect(screen.getByText("Paste JD")).toBeInTheDocument();
   });
 
   it("shows Tracker > job title on /jobs/:id, using real dashboard data", async () => {

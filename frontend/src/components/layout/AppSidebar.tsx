@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboardIcon, ListChecksIcon, SearchIcon } from "lucide-react";
+import { LayoutDashboardIcon, ListChecksIcon, SearchIcon, FilePlus2Icon } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +15,7 @@ import {
 const NAV_ITEMS = [
   { to: "/", label: "Dashboard", icon: LayoutDashboardIcon, end: true },
   { to: "/search", label: "Job Search", icon: SearchIcon, end: false },
+  { to: "/quick-apply", label: "Paste JD", icon: FilePlus2Icon, end: false },
   { to: "/jobs", label: "Tracker", icon: ListChecksIcon, end: false },
 ] as const;
 
