@@ -17,4 +17,22 @@ describe("referralService", () => {
 
     expect(fetchMock).toHaveBeenCalledWith("/api/referral/generate/job-1", expect.objectContaining({ method: "POST" }));
   });
+
+  it("generateDraftsAdhoc() posts to /api/referral/generate-adhoc with title/company/driveLink", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ success: true, message: "ok", data: [] })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await referralService.generateDraftsAdhoc({ title: "Engineer", company: "Acme", driveLink: "https://drive.example/a" });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/referral/generate-adhoc",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ title: "Engineer", company: "Acme", driveLink: "https://drive.example/a" })
+      })
+    );
+  });
 });

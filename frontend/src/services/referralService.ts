@@ -3,6 +3,8 @@ import type { Employee, ReferralDraft } from "../types";
 
 export const referralService = {
   generateDrafts: (jobId: string) => request<ReferralDraft[]>(`/api/referral/generate/${jobId}`, { method: "POST" }),
+  generateDraftsAdhoc: (input: { title: string; company: string; driveLink?: string }) =>
+    request<ReferralDraft[]>("/api/referral/generate-adhoc", { method: "POST", body: JSON.stringify(input) }),
   markSent: (jobId: string, employee: Employee) =>
     request<{ tracked: boolean }>(`/api/referral/sent/${jobId}`, {
       method: "POST",
